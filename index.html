@@ -5,25 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pharmacy Consultation Training - AI Patient Simulator</title>
     
-    <!-- D-ID SDK Integration - Alternative approach -->
-    <script>
-        // Load D-ID SDK dynamically with fallback
-        (function loadDIDSDK() {
-            const script = document.createElement('script');
-            script.src = 'https://d-id-public-bucket.s3.us-west-2.amazonaws.com/api-studio-sdk/0.0.4/d-id-client.js';
-            script.onload = function() {
-                console.log('D-ID SDK loaded successfully');
-                window.didSDKLoaded = true;
-            };
-            script.onerror = function() {
-                console.warn('Primary D-ID SDK failed, trying fallback...');
-                // Fallback to REST API approach
-                window.didSDKLoaded = false;
-                window.didUseFallback = true;
-            };
-            document.head.appendChild(script);
-        })();
-    </script>
+    
     
     <!-- Modern styling for the interface -->
     <style>
@@ -49,24 +31,28 @@
             --warning-color: #f59e0b;
         }
         
-        /* Main body styling */
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background-color: var(--background);
-            color: var(--text-primary);
-            line-height: 1.6;
-            min-height: 100vh;
-        }
+        /* LOCKED BODY STYLING - Prevent expansion */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    line-height: 1.6;
+    min-height: 100vh;
+    max-height: 100vh; /* LOCKED: Prevent vertical expansion */
+    overflow: hidden; /* LOCKED: Prevent body scrolling */
+}
         
-        /* Container for centering content */
-        .container {
-            max-width: 95%;
-            margin: 0 auto;
-            padding: 20px;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
+        /* LOCKED CONTAINER - Fixed dimensions */
+.container {
+    max-width: 95%;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: 100vh;
+    max-height: 100vh; /* LOCKED: Prevent expansion */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* LOCKED: Contain all content */
+}
         
         /* Header section styling */
         .header {
@@ -82,6 +68,11 @@
             color: var(--primary-color);
             margin-bottom: 10px;
         }
+
+        /* Hide the instructions card */
+.header:nth-child(2) {
+    display: none;
+}
         
         /* Improved instructions styling for better centering */
         .instructions-container {
@@ -109,25 +100,33 @@
             line-height: 1.4;
         }
         
-        /* Grid layout for main content - 3 COLUMNS RESTORED with full height */
-        .grid {
-            display: grid;
-            grid-template-columns: 0.5fr 1fr 2.0fr;
-            gap: 20px;
-            flex: 1;
-            align-items: stretch;
-        }
+        /* LOCKED GRID LAYOUT - 3 COLUMNS with fixed proportions */
+.grid {
+    display: grid;
+    grid-template-columns: 0.5fr 0.8fr 2.2fr;
+    gap: 20px;
+    flex: 1;
+    align-items: stretch;
+    min-height: calc(100vh - 200px); /* LOCKED: Minimum height */
+    max-height: calc(100vh - 200px); /* LOCKED: Maximum height */
+    overflow: hidden; /* LOCKED: Prevent overflow expansion */
+    transition: all 0.3s ease; /* ADDED: Smooth grid transitions */
+}
         
-        /* Card component for sections - Full height */
-        .card {
-            background: var(--card-background);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-        }
+        /* LOCKED CARD COMPONENT - Fixed sizes */
+.card {
+    background: var(--card-background);
+    padding: 20px 20px 0 20px; /* CHANGED: Remove bottom padding */
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* LOCKED: Full height of grid cell */
+    min-height: calc(100vh - 240px); /* LOCKED: Minimum height */
+    max-height: calc(100vh - 240px); /* LOCKED: Maximum height */
+    position: relative;
+    overflow: hidden; /* LOCKED: Prevent content from expanding card */
+}
         
         .card h2 {
             margin-bottom: 15px;
@@ -136,18 +135,32 @@
             flex-shrink: 0;
         }
         
-        /* Card content area */
-        .card-content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
+        /* LOCKED CARD CONTENT - Constrained sizing */
+.card-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* CRITICAL: Allows content to shrink */
+    overflow: hidden; /* CRITICAL: Prevents overflow expansion */
+}
+
+     /* LOCKED SCROLLABLE SECTIONS - Constrained to card boundaries */
+.scrollable-section {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0; /* LOCKED: Allow shrinking */
+    max-height: none; /* LOCKED: Let parent control max height */
+}   
         
         /* Form input styling */
         .form-group {
             margin-bottom: 15px;
             flex-shrink: 0;
         }
+
+        .form-group.no-margin {
+    margin-bottom: 0;
+}
         
         label {
             display: block;
@@ -246,18 +259,51 @@
         .btn-warning:hover {
             background-color: #d97706;
         }
+
+        /* Status Button States - Add this after existing button styles */
+.btn-status-pending {
+    background-color: var(--danger-color) !important;
+    color: white !important;
+    position: relative;
+}
+
+.btn-status-pending:hover {
+    background-color: #dc2626 !important;
+}
+
+.btn-status-completed {
+    background-color: var(--success-color) !important;
+    color: white !important;
+}
+
+.btn-status-completed:hover {
+    background-color: #047857 !important;
+}
+
+.btn-status-completed::after {
+    content: " ✓";
+    font-weight: bold;
+}
         
-        /* Chat display area - Flexible height */
-        .chat-container {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            background-color: #fafafa;
-            margin-bottom: 15px;
-            min-height: 400px;
-        }
+        /* LOCKED CHAT CONTAINER - Fixed boundaries */
+.chat-container {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 15px;
+    padding-bottom: 80px; /* ADD THIS: Extra space for button group */
+    background-color: #fafafa;
+    margin: 0;
+    min-height: 200px;
+    max-height: none;
+    height: auto;
+    word-wrap: break-word;
+    word-break: break-word;
+    scroll-behavior: smooth;
+    box-sizing: border-box;
+}
         
         /* Individual message styling */
 .message {
@@ -265,6 +311,13 @@
     padding: 10px 15px;
     border-radius: 8px;
     max-width: 80%;
+    /* ADD THESE CRITICAL FIXES: */
+    word-wrap: break-word;
+    word-break: break-word;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+    /* Prevent messages from expanding beyond container */
+    min-width: 0;
 }
 
 /* Add this new CSS for the recording button animation */
@@ -358,18 +411,25 @@
         
         /* Button group styling for control buttons */
         .button-group {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            justify-content: center;
-            margin-top: auto;
-            flex-shrink: 0;
-        }
-        
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    position: absolute; /* CHANGED: Back to absolute positioning */
+    bottom: 0; /* CHANGED: Stick to bottom */
+    left: 0; /* ADDED: Full width positioning */
+    right: 0; /* ADDED: Full width positioning */
+    background: var(--card-background);
+    padding: 15px 20px; /* Proper padding */
+    border-top: 1px solid var(--border-color);
+    flex-shrink: 0;
+    border-radius: 0 0 12px 12px; /* Round bottom corners */
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05); /* ADDED: Subtle shadow for separation */
+}
         .button-group button {
-            flex: 1;
-            min-width: 140px;
-        }
+    flex: 1;
+    min-width: 140px;
+}
         
         /* Avatar video container styling - Enhanced for larger display */
         .avatar-container {
@@ -377,13 +437,13 @@
     text-align: center;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     margin-bottom: 15px;
     min-height: 500px;
     padding: 10px;
     overflow: hidden;
-    gap: 15px;
+    gap: 10px;
 }
 
         #avatarVideo {
@@ -391,11 +451,12 @@
     border-radius: 12px;
     background-color: #f8f9fa;
     width: 100%;
-    height: auto;
+    height: calc(100vh - 300px);
     max-width: 100%;
-    max-height: 70vh;
-    min-height: 400px;
+    max-height: calc(100vh - 300px);
+    min-height: 450px;
     object-fit: contain;
+    object-position: center center; /* Force center positioning */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     margin: 0 auto;
     display: block;
@@ -734,8 +795,8 @@
 
 .review-buttons button {
     flex: 1;
-    padding: 10px 8px;
-    font-size: 13px;
+    padding: 20px 8px; /* Double the vertical padding */
+    font-size: 14px; /* Slightly larger font */
     font-weight: 500;
     min-width: 0;
     white-space: nowrap;
@@ -746,10 +807,9 @@
     transition: all 0.3s;
     overflow: hidden;
     text-overflow: ellipsis;
-    /* Add these properties to ensure consistent sizing */
     max-width: none;
     box-sizing: border-box;
-    height: auto;
+    height: 60px; /* Set explicit height for double size */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -800,11 +860,11 @@
             background-color: #f8fafc;
         }
 
-        /* Responsive video wrapper for better aspect ratio handling */
+/* Responsive video wrapper for better aspect ratio handling */
 .video-wrapper {
     position: relative;
     width: 100%;
-    max-width: 600px;
+    max-width: none;
     margin: 0 auto;
     background: #f8f9fa;
     border-radius: 12px;
@@ -813,15 +873,232 @@
     display: flex;
     align-items: center;
     justify-content: center;
+    min-height: 450px;
+    height: calc(100vh - 300px);
 }
 
 .video-wrapper video {
     width: 100%;
-    height: auto;
+    height: 100%;
     display: block;
     object-fit: contain;
+    object-position: center center; /* Force center positioning */
 }
-        
+
+/* COLLAPSIBLE CONFIGURATION PANEL */
+.collapse-btn {
+    float: right;
+    background: none;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+    color: var(--text-secondary);
+    transition: all 0.3s ease;
+    margin-left: 10px;
+}
+
+.collapse-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+/* Collapsed state for configuration card */
+.card.collapsed {
+    width: 40px !important;
+    min-width: 40px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card.collapsed .card-content {
+    display: none;
+}
+
+.card.collapsed h2 {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    margin: 0;
+    padding: 60px 0 10px 0;
+    text-align: center;
+    font-size: 16px;
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+    margin-left: -13px; /* ADDED: Shift text slightly left to center it */
+}
+
+/* Keep the collapse button simple when collapsed */
+.card.collapsed .collapse-btn {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: none;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card.collapsed .collapse-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(-50%) scale(1);
+}
+
+/* Adjust grid when configuration is collapsed */
+.grid.config-collapsed {
+    grid-template-columns: 40px 1fr 3fr; /* Collapsed config, expanded middle and right */
+    transition: all 0.3s ease;
+}
+
+/* Ensure smooth transitions */
+.card {
+    transition: all 0.3s ease;
+}
+
+/* Make entire collapsed header clickable */
+.card.collapsed h2:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Hover expansion for collapsed configuration */
+.card.collapsed:hover {
+    width: 80px !important;
+    transition: width 0.2s ease;
+}
+
+.card.collapsed:hover h2 {
+    font-size: 12px;
+}
+
+.card.collapsed:hover .collapse-btn {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+}
+
+        /* Scenario Management Collapsible Styles */
+.card.scenario-collapsed {
+    width: 40px !important;
+    min-width: 40px !important;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.card.scenario-collapsed .card-content {
+    display: none;
+}
+
+.card.scenario-collapsed h2 {
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    margin: 0;
+    padding: 60px 0 10px 0;
+    text-align: center;
+    font-size: 16px;
+    white-space: nowrap;
+    position: relative;
+    cursor: pointer;
+    margin-left: -13px; /* Center the text */
+}
+
+.card.scenario-collapsed .collapse-btn {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    padding: 4px 8px;
+    font-size: 12px;
+    background: none;
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.card.scenario-collapsed .collapse-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+    transform: translateX(-50%) scale(1);
+}
+
+/* Make entire collapsed header clickable */
+.card.scenario-collapsed h2:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+}
+
+/* Hover expansion for collapsed scenario management */
+.card.scenario-collapsed:hover {
+    width: 80px !important;
+    transition: width 0.2s ease;
+}
+
+.card.scenario-collapsed:hover h2 {
+    font-size: 12px;
+}
+
+.card.scenario-collapsed:hover .collapse-btn {
+    opacity: 1;
+    transform: translateX(-50%) scale(1.05);
+}
+
+/* Adjust grid when scenario management is collapsed */
+.grid.scenario-collapsed {
+    grid-template-columns: 0.5fr 40px 2.2fr; /* Config, collapsed scenario, expanded avatar */
+    transition: all 0.3s ease;
+}
+
+/* Adjust grid when both are collapsed */
+.grid.config-collapsed.scenario-collapsed {
+    grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
+    transition: all 0.3s ease;
+}
+
+        /* Adjust grid when both are collapsed */
+.grid.config-collapsed.scenario-collapsed {
+    grid-template-columns: 40px 40px 4fr; /* Both collapsed, avatar takes most space */
+    transition: all 0.3s ease;
+}
+
+/* ADD THE NEW CSS HERE - RIGHT AFTER THE CLOSING BRACE ABOVE */
+/* Fix video centering when scenario panel is collapsed */
+.grid.scenario-collapsed .video-wrapper {
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.grid.scenario-collapsed #avatarVideo {
+    margin: 0 auto;
+    object-position: center center;
+    transform: translateX(0); /* Reset any transforms */
+}
+
+/* Ensure avatar container centers content when collapsed */
+.grid.scenario-collapsed .avatar-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+}
+ 
     </style>
 </head>
 
@@ -865,236 +1142,486 @@
         <!-- Main content grid -->
         <div class="grid">
             <!-- Configuration section -->
-            <div class="card">
-                <h2>⚙️ Configuration</h2>
-                <div class="card-content" style="display: flex; flex-direction: column; height: 100%;">
+           <div class="card" id="configCard">
+    <h2 onclick="handleHeaderClick(event)">Configuration
+        <button class="collapse-btn" onclick="toggleConfigCollapse()" id="configCollapseBtn">
+            ◀
+        </button>
+    </h2>
+    <div class="card-content" style="display: flex; flex-direction: column; height: 100%;">
                     <div class="scrollable-section">
-                        <!-- n8n webhook URL input -->
-                        <div class="form-group">
-                            <label for="webhookUrl">n8n Webhook URL (Chat):</label>
-                            <input 
-                                type="password" 
-                                id="webhookUrl" 
-                                placeholder="https://your-n8n-instance.com/webhook/..."
-                                title="Enter your n8n webhook URL that will receive the messages"
-                                autocomplete="new-password"
-                            >
-                        </div>
+
+<!-- Hidden webhook fields - populated by chatbot configuration -->
+<input type="hidden" id="webhookUrl" />
+<input type="hidden" id="submitWebhookUrl" />
+
+<!-- Configuration Sheet ID - MOVED UP -->
+<div class="form-group">
+    <label for="configSheetId">Chatbot ID's:</label>
+    <input 
+        type="password" 
+        id="configSheetId" 
+        placeholder="Google Sheet ID containing chatbot configurations"
+        title="The Google Sheet ID containing your chatbot configurations"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+    <button 
+    class="btn-secondary btn-status-pending" 
+    onclick="loadChatbotConfigurations()" 
+    style="width: 100%; margin-top: 10px; font-size: 14px;"
+    id="loadChatbotBtn"
+>
+    Load Chatbot Configurations
+</button>
+    <small style="color: var(--text-secondary); font-size: 11px; display: block; margin-top: 5px;">
+    </small>
+</div>              
+                                          
+<!-- Scenario Sets List Field -->
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+    <label for="scenarioSetsId">Scenario Sets List:</label>
+    <input 
+        type="password" 
+        id="scenarioSetsId" 
+        placeholder="Google Sheet ID containing list of scenario sets"
+        title="The Google Sheet ID containing your scenario sets list"
+        autocomplete="new-password"
+        style="font-size: 14px;"
+    >
+    <button 
+    class="btn-secondary btn-status-pending" 
+    onclick="loadScenarioSets()" 
+    style="width: 100%; margin-top: 10px; font-size: 14px;"
+    id="loadSetsBtn"
+>
+    Load Scenario Sets
+</button>
+    
+    <!-- Hidden field - automatically populated from scenario set selection -->
+<input 
+    type="hidden" 
+    id="sheetId"
+>
+</div>
+       
                         
-                        <!-- Submit webhook URL input -->
-                        <div class="form-group">
-                            <label for="submitWebhookUrl">n8n Submit Webhook URL:</label>
-                            <input 
-                                type="password"
-                                id="submitWebhookUrl" 
-                                placeholder="https://your-n8n-instance.com/webhook/submit..."
-                                title="Enter your n8n webhook URL for submitting conversation history"
-                                autocomplete="new-password"
-                            >
-                        </div>
+<!-- STT Provider Selection - MOVED FROM VOICE CONTROL -->
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+        <label>Speech Recognition Provider:</label>
+    <div class="tts-provider-group">
+        <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
+            Browser STT
+        </button>
+        <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
+            Deepgram (Medical)
+        </button>
+    </div>
+</div>
+
+<!-- Deepgram STT Settings - MOVED FROM VOICE CONTROL -->
+<div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
+    <div class="form-group">
+        <label for="deepgramApiKey">Deepgram API Key:</label>
+        <input 
+            type="password" 
+            id="deepgramApiKey" 
+            placeholder="Enter your Deepgram API key"
+            autocomplete="new-password"
+        >
+        <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
+            Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
+        </small>
+    </div>
+    
+    <div class="form-group">
+        <label for="deepgramModel">Deepgram Model:</label>
+        <select id="deepgramModel">
+            <option value="nova-2-medical">Nova 2 Medical (Recommended)</option>
+            <option value="nova-2">Nova 2 General</option>
+            <option value="nova">Nova</option>
+            <option value="enhanced">Enhanced</option>
+            <option value="base">Base</option>
+        </select>
+    </div>
+    
+    <div class="form-group">
+        <label for="deepgramLanguage">Language:</label>
+        <select id="deepgramLanguage">
+            <option value="en-US">English (US)</option>
+            <option value="en-GB">English (UK)</option>
+            <option value="en-AU">English (AU)</option>
+        </select>
+    </div>
+</div>
                         
-                        <!-- Google Sheets configuration -->
-                        <div class="form-group">
-                            <label for="sheetId">Google Sheet ID:</label>
-                            <input 
-                                type="password" 
-                                id="sheetId" 
-                                placeholder="1ABC...xyz"
-                                title="The ID from your Google Sheets URL"
-                                autocomplete="new-password"
-                            >
-                            <button 
-                                class="btn-secondary" 
-                                onclick="loadSheetNames()" 
-                                style="margin-top: 10px; width: 100%;"
-                            >
-                                📋 Get Sheet Names
-                            </button>
-                        </div>
                         
-                        <div class="form-group">
-                            <label for="sheetName">Sheet Name:</label>
-                            <select id="sheetName" disabled>
-                                <option value="">Get sheet names first...</option>
-                            </select>
-                        </div>
-                        
-                        <!-- Scenario selection dropdown -->
-                        <div class="form-group" style="margin-top: 20px;">
-                            <label for="scenarioSelect">Select Scenario:</label>
-                            <select id="scenarioSelect" disabled>
-                                <option value="">Load sheet data first...</option>
-                            </select>
-                        </div>
-                        
-                        <button class="btn-secondary" onclick="selectRandomScenario()" style="margin-top: 10px;">
-                            🎲 Random Scenario
-                        </button>
-                        
-                        <!-- Patient Image Button -->
-                        <button 
-                            class="patient-image-btn disabled" 
-                            id="patientImageBtn"
-                            onclick="showPatientImage()"
-                            disabled
-                        >
-                            📷 No Scenario Selected
-                        </button>
-                        
+
+                       
                         <!-- D-ID Configuration -->
-                        <div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
-                            <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">🎭 D-ID Avatar Settings</h3>
-                            
-                            <form style="margin: 0;" onsubmit="return false;">
-                                <input type="text" name="username" style="display: none;" autocomplete="username">
-                                <label for="didApiKey">D-ID API Key:</label>
-                                <input 
-                                    type="password" 
-                                    id="didApiKey" 
-                                    name="password"
-                                    placeholder="Enter your D-ID API key"
-                                    title="Get your API key from studio.d-id.com"
-                                    autocomplete="current-password"
-                                >
-                                <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
-                                    Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
-                                </small>
-                                
-                                <button 
-                                    type="button"
-                                    class="btn-primary" 
-                                    onclick="initializeDID()" 
-                                    style="margin-top: 10px; width: 100%;"
-                                >
-                                    🚀 Initialize Avatar
-                                </button>
-                            </form>
+<div class="form-group" style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 20px;">
+    
+    
+    <form style="margin: 0;" onsubmit="return false;">
+        <input type="text" name="username" style="display: none;" autocomplete="username">
+        <label for="didApiKey">D-ID API Key:</label>
+        <input 
+            type="password" 
+            id="didApiKey" 
+            name="password"
+            placeholder="Enter your D-ID API key"
+            title="Get your API key from studio.d-id.com"
+            autocomplete="current-password"
+        >
+        <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 12px;">
+            Get your API key from <a href="https://studio.d-id.com" target="_blank">studio.d-id.com</a>
+        </small>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label for="serviceType">Avatar Service:</label>
+            <select id="serviceType">
+                <option value="talks">Talks (Custom Image)</option>
+                <option value="clips">Clips (Preset Avatars)</option>
+            </select>
+        </div>
+        
+        <div class="form-group" id="imageUrlGroup">
+            <label for="sourceUrl">Source Image URL (for Talks):</label>
+            <input type="url" id="sourceUrl" placeholder="https://example.com/your-image.jpg">
+        </div>
+        
+        <div class="form-group" id="presenterGroup" style="display: none;">
+            <label for="presenterId">Presenter (for Clips):</label>
+            <select id="presenterId">
+                <option value="">Select presenter...</option>
+                <option value="wayne_20240711">Wayne (Recommended)</option>
+                <option value="amy-Aq6OmGZnMt">Amy (Professional)</option>
+                <option value="noelle">Noelle (Default)</option>
+                <option value="eric-2UHNp4HyMt">Eric (Casual)</option>
+                <option value="stacey-G6mPtqx8eS">Stacey (Friendly)</option>
+            </select>
+            <small style="display: block; margin-top: 5px; color: var(--text-secondary); font-size: 11px;">
+                Note: Some presenters may require specific API access levels
+            </small>
+        </div>
+
+        <!-- Enhanced Voice Selection Dropdown -->
+<div class="form-group" style="margin-top: 15px;">
+    <label for="voiceSelection">Voice Selection:</label>
+    <select id="voiceSelection">
+        <option value="">Auto (Gender-Based Matching)</option>
+        
+        <!-- US English Female Voices -->
+        <optgroup label="🇺🇸 US English - Female">
+            <option value="en-US-AriaNeural">Aria - Professional Female</option>
+            <option value="en-US-JennyNeural">Jenny - Conversational Female</option>
+            <option value="en-US-AmberNeural">Amber - Warm Female</option>
+            <option value="en-US-ElizabethNeural">Elizabeth - Mature Female</option>
+            <option value="en-US-MichelleNeural">Michelle - Young Female</option>
+            <option value="en-US-AnaNeural">Ana - Friendly Female</option>
+            <option value="en-US-AvaNeural">Ava - Young Female</option>
+            <option value="en-US-EmmaNeural">Emma - Young Female</option>
+            <option value="en-US-JaneNeural">Jane - Young Female</option>
+            <option value="en-US-NancyNeural">Nancy - Young Female</option>
+            <option value="en-US-SaraNeural">Sara - Adult Female</option>
+        </optgroup>
+        
+        <!-- US English Male Voices -->
+        <optgroup label="🇺🇸 US English - Male">
+            <option value="en-US-GuyNeural">Guy - Casual Male</option>
+            <option value="en-US-DavisNeural">Davis - Professional Male</option>
+            <option value="en-US-ChristopherNeural">Christopher - Mature Male</option>
+            <option value="en-US-EricNeural">Eric - Young Male</option>
+            <option value="en-US-BrianNeural">Brian - Deep Male</option>
+            <option value="en-US-AndrewNeural">Andrew - Adult Male</option>
+            <option value="en-US-JacobNeural">Jacob - Young Male</option>
+            <option value="en-US-JasonNeural">Jason - Adult Male</option>
+            <option value="en-US-TonyNeural">Tony - Adult Male</option>
+            <option value="en-US-RyanNeural">Ryan - Adult Male</option>
+        </optgroup>
+        
+        <!-- UK English Voices -->
+        <optgroup label="🇬🇧 UK English - Female">
+            <option value="en-GB-SoniaNeural">Sonia - Professional British Female</option>
+            <option value="en-GB-LibbyNeural">Libby - Young British Female</option>
+            <option value="en-GB-MaisieNeural">Maisie - Child British Female</option>
+            <option value="en-GB-AbbiNeural">Abbi - Young British Female</option>
+            <option value="en-GB-BellaNeural">Bella - Young British Female</option>
+            <option value="en-GB-HollieNeural">Hollie - Young British Female</option>
+        </optgroup>
+        
+        <optgroup label="🇬🇧 UK English - Male">
+            <option value="en-GB-RyanNeural">Ryan - Professional British Male</option>
+            <option value="en-GB-ThomasNeural">Thomas - Adult British Male</option>
+            <option value="en-GB-NoahNeural">Noah - Young British Male</option>
+            <option value="en-GB-OliverNeural">Oliver - Young British Male</option>
+            <option value="en-GB-ElliotNeural">Elliot - Young British Male</option>
+        </optgroup>
+        
+        <!-- Australian English Voices -->
+        <optgroup label="🇦🇺 Australian English - Female">
+            <option value="en-AU-NatashaNeural">Natasha - Professional Australian Female</option>
+            <option value="en-AU-FreyaNeural">Freya - Young Australian Female</option>
+            <option value="en-AU-AnnetteNeural">Annette - Adult Australian Female</option>
+            <option value="en-AU-CarlyNeural">Carly - Adult Australian Female</option>
+            <option value="en-AU-DarrenNeural">Darren - Young Australian Female</option>
+        </optgroup>
+        
+        <optgroup label="🇦🇺 Australian English - Male">
+            <option value="en-AU-WilliamNeural">William - Professional Australian Male</option>
+            <option value="en-AU-KenNeural">Ken - Adult Australian Male</option>
+            <option value="en-AU-NeilNeural">Neil - Adult Australian Male</option>
+            <option value="en-AU-TimNeural">Tim - Adult Australian Male</option>
+        </optgroup>
+        
+        <!-- Canadian English Voices -->
+        <optgroup label="🇨🇦 Canadian English - Female">
+            <option value="en-CA-ClaraNeural">Clara - Professional Canadian Female</option>
+            <option value="en-CA-VivianNeural">Vivian - Adult Canadian Female</option>
+        </optgroup>
+        
+        <optgroup label="🇨🇦 Canadian English - Male">
+            <option value="en-CA-LiamNeural">Liam - Professional Canadian Male</option>
+        </optgroup>
+        
+        <!-- Irish English Voices -->
+        <optgroup label="🇮🇪 Irish English">
+            <option value="en-IE-EmilyNeural">Emily - Irish Female</option>
+            <option value="en-IE-ConnorNeural">Connor - Irish Male</option>
+        </optgroup>
+        
+        <!-- Indian English Voices -->
+        <optgroup label="🇮🇳 Indian English - Female">
+            <option value="en-IN-NeerjaNeural">Neerja - Indian Female</option>
+            <option value="en-IN-PrabhatNeural">Prabhat - Indian Female</option>
+        </optgroup>
+        
+        <optgroup label="🇮🇳 Indian English - Male">
+            <option value="en-IN-PrabhatNeural">Prabhat - Indian Male</option>
+        </optgroup>
+        
+        <!-- New Zealand English -->
+        <optgroup label="🇳🇿 New Zealand English">
+            <option value="en-NZ-MollyNeural">Molly - New Zealand Female</option>
+            <option value="en-NZ-MitchellNeural">Mitchell - New Zealand Male</option>
+        </optgroup>
+        
+        <!-- South African English -->
+        <optgroup label="🇿🇦 South African English">
+            <option value="en-ZA-LeahNeural">Leah - South African Female</option>
+            <option value="en-ZA-LukeNeural">Luke - South African Male</option>
+        </optgroup>
+        
+        <!-- Spanish Voices -->
+        <optgroup label="🇪🇸 Spanish - Female">
+            <option value="es-ES-ElviraNeural">Elvira - Spanish Female</option>
+            <option value="es-ES-AlvaroNeural">Alvaro - Spanish Female</option>
+        </optgroup>
+        
+        <optgroup label="🇪🇸 Spanish - Male">
+            <option value="es-ES-AlvaroNeural">Alvaro - Spanish Male</option>
+        </optgroup>
+        
+        <!-- French Voices -->
+        <optgroup label="🇫🇷 French - Female">
+            <option value="fr-FR-DeniseNeural">Denise - French Female</option>
+            <option value="fr-FR-EloiseNeural">Eloise - French Female</option>
+        </optgroup>
+        
+        <optgroup label="🇫🇷 French - Male">
+            <option value="fr-FR-HenriNeural">Henri - French Male</option>
+        </optgroup>
+        
+        <!-- German Voices -->
+        <optgroup label="🇩🇪 German - Female">
+            <option value="de-DE-KatjaNeural">Katja - German Female</option>
+            <option value="de-DE-AmalaNeural">Amala - German Female</option>
+        </optgroup>
+        
+        <optgroup label="🇩🇪 German - Male">
+            <option value="de-DE-ConradNeural">Conrad - German Male</option>
+        </optgroup>
+        
+        <!-- Italian Voices -->
+        <optgroup label="🇮🇹 Italian - Female">
+            <option value="it-IT-ElsaNeural">Elsa - Italian Female</option>
+            <option value="it-IT-IsabellaNeural">Isabella - Italian Female</option>
+        </optgroup>
+        
+        <optgroup label="🇮🇹 Italian - Male">
+            <option value="it-IT-DiegoNeural">Diego - Italian Male</option>
+        </optgroup>
+    </select>
+    </div>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label for="chunkSize">Text Chunk Size:</label>
+            <input type="number" id="chunkSize" value="200" min="50" max="500">
+            <small style="color: var(--text-secondary); font-size: 11px;">
+                Smaller = more natural speech, larger = fewer API calls
+            </small>
+        </div>
+        
+        <div class="form-group">
+            <input type="checkbox" id="streamingMode" checked style="width: auto; margin-right: 8px;">
+            <label for="streamingMode" style="display: inline;">Enable Streaming Mode</label>
+        </div>
+        
+                          </form>
                         </div>
                     </div>
                 </div>
             </div>
             
-            <!-- Voice control section -->
-            <div class="card">
-                <h2>🎙️ Voice Control</h2>
-                <div class="card-content">
-                    <!-- STT Provider Selection -->
-                    <div class="form-group">
-                        <label>Speech Recognition Provider:</label>
-                        <div class="tts-provider-group">
-                            <button class="tts-provider-btn active" id="browserSttBtn" onclick="selectSttProvider('browser')">
-                                🌐 Browser STT
-                            </button>
-                            <button class="tts-provider-btn" id="deepgramSttBtn" onclick="selectSttProvider('deepgram')">
-                                🎯 Deepgram (Medical)
-                            </button>
-                        </div>
-                    </div>
+            <!-- Scenario managment section -->
+<div class="card" id="scenarioCard">
+    <h2 onclick="handleScenarioHeaderClick(event)">Scenario Management
+    <button class="collapse-btn" onclick="toggleScenarioCollapse()" id="scenarioCollapseBtn">
+        ◀
+    </button>
+</h2>
+    <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
-                    <!-- Deepgram STT Settings -->
-                    <div id="deepgramSettings" class="tts-settings elevenlabs-config" style="display: none;">
-                        <div class="form-group">
-                            <label for="deepgramApiKey">Deepgram API Key:</label>
-                            <input 
-                                type="password" 
-                                id="deepgramApiKey" 
-                                placeholder="Enter your Deepgram API key"
-                                autocomplete="new-password"
-                            >
-                            <small style="color: var(--text-secondary); font-size: 12px; display: block; margin-top: 5px;">
-                                Get your API key from <a href="https://console.deepgram.com" target="_blank">console.deepgram.com</a>
-                            </small>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="deepgramModel">Deepgram Model:</label>
-                            <select id="deepgramModel">
-                                <option value="nova-2-medical">Nova 2 Medical (Recommended)</option>
-                                <option value="nova-2">Nova 2 General</option>
-                                <option value="nova">Nova</option>
-                                <option value="enhanced">Enhanced</option>
-                                <option value="base">Base</option>
-                            </select>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label for="deepgramLanguage">Language:</label>
-                            <select id="deepgramLanguage">
-                                <option value="en-US">English (US)</option>
-                                <option value="en-GB">English (UK)</option>
-                                <option value="en-AU">English (AU)</option>
-                            </select>
-                        </div>
-                    </div>
+        <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
+        <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+                                   
+            <div class="form-group">
+                <label for="chatbotSelect">Select Chatbot:</label>
+                <select id="chatbotSelect" disabled style="font-size: 14px;">
+                    <option value="">Load configurations first...</option>
+                </select>
+            </div>
+            
+            <button 
+    class="btn-info btn-status-pending" 
+    onclick="applyChatbotConfiguration()" 
+    style="width: 100%; font-size: 14px;"
+    disabled
+    id="applyChatbotBtn"
+>
+    Apply Selected Chatbot
+</button>
+        </div>       
 
-                    <!-- Conversation History -->
-                    <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
-                        <label for="chatContainer">💬 Conversation History:</label>
-                        <div class="chat-container" id="chatContainer">
-                            <p style="text-align: center; color: var(--text-secondary);">
-                                Select a scenario and start recording to begin the consultation...
-                            </p>
-                        </div>
-                    </div>
+
+        <!-- Scenario Sets Management Section -->
+<div class="form-group">  
+    <div class="form-group" style="margin-top: 15px;">
+        <label for="scenarioSetSelect">Select Scenario Set:</label>
+        <select id="scenarioSetSelect" disabled style="font-size: 14px;">
+            <option value="">Load scenario sets first...</option>
+        </select>
+    </div>
+</div>
+
+        <!-- Scenario Management Section -->
+        <div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;">
+            <div class="form-group">
+                <label for="sheetName">Sheet Name:</label>
+                <select id="sheetName" disabled>
+                    <option value="">Select scenario set first</option>
+                </select>
+            </div>
+    
+    <!-- Scenario selection dropdown -->
+    <div class="form-group">
+        <label for="scenarioSelect">Select Scenario:</label>
+        <select id="scenarioSelect" disabled>
+            <option value="">Load sheet data first...</option>
+        </select>
+    </div>
+    
+    <button class="btn-info" onclick="selectRandomScenario()" style="margin-bottom: 10px; width: 100%;">
+        Random Scenario
+    </button>
+    
+    <!-- Patient Image Button - MOVED FROM CONFIGURATION -->
+    <button 
+        class="patient-image-btn disabled" 
+        id="patientImageBtn"
+        onclick="showPatientImage()"
+        disabled
+    >
+        No Scenario Selected
+    </button>
+</div>
+
+<!-- Avatar Control Section - MOVED FROM CONFIGURATION -->
+<div class="form-group" style="border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 0;">
+    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">Avatar Control</h3>
+    
+    <button 
+    type="button"
+    class="btn-primary btn-status-pending" 
+    onclick="initializeDID()" 
+    style="margin-bottom: 10px; width: 100%;"
+    id="initializeAvatarBtn"
+>
+    Initialize & Connect Avatar
+</button>
+
+</div>
+
+                <!-- Conversation History -->
+    <label for="chatContainer" style="flex-shrink: 0; margin-bottom: 5px; margin-top: 20px; font-weight: 700; color: var(--text-secondary);">Conversation History:</label>
+    <div class="chat-container" id="chatContainer" style="flex: 1; margin: 0;">
+    <p style="text-align: center; color: var(--text-secondary);">
+        Select a scenario and start recording to begin the consultation...
+    </p>
+</div>
                     
                     <!-- Control buttons -->
 <div class="button-group">
-    <button class="btn-warning" onclick="newSession()">
-        🆕 New Session
-    </button>
     <button class="btn-secondary" onclick="clearChat()">
-        🔄 Clear Chat
+        Clear Chat
     </button>
     <button class="btn-danger" onclick="submitConversation()">
-        📋 Submit Chat
+        Submit Chat
     </button>
     <button class="btn-info" onclick="exportConversation()">
-        📥 Export Chat
+        Export Chat
+    </button>
+    <button class="btn-warning" onclick="newSession()">
+        New Session
     </button>
 </div>
-                </div>
-            </div>
-                                     
-                                             
-            <!-- Avatar display area -->
+                </div>   <!-- This closes .card-content -->
+            </div>      <!-- This closes .card -->
+            
+            <!-- Avatar display area - THIRD COLUMN -->
             <div class="card">
-                <h2>🎭 AI Patient Avatar</h2>
+                <h2>Patient Avatar</h2>
                 <div class="card-content">
                     <!-- D-ID Avatar Video Container -->
 <div class="avatar-container" id="avatarContainer">
     <div class="video-wrapper">
-        <video 
-            id="avatarVideo" 
-            width="100%" 
-            height="auto"
-            autoplay 
-            controls
-            style="
-    border-radius: 12px; 
-    background-color: #f0f0f0; 
-    max-height: 70vh;
-    min-height: 400px;
-    object-fit: contain;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: block;
-    margin: 0 auto;
+       <video 
+    id="avatarVideo" 
+    width="100%" 
+    height="100%"
+    autoplay 
+    controls
+    style="
+border-radius: 12px; 
+background-color: #f0f0f0; 
+width: 100%;
+height: 100%;
+object-fit: contain;
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+display: block;
+margin: 0 auto;
 "
-        >
-        </video>
+>
+</video>
     </div>
     <div id="avatarStatus" class="avatar-status">
     </div>
-</div>
-    </video>
-    <div id="avatarStatus" class="avatar-status">
-    </div>
-</div>
+</div></div>
 
 <!-- Review section for transcript before sending -->
 <div class="review-section" id="reviewSection">
-    <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">📝 Live Transcription & Review</h3>
+    <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center;">Live Transcription & Review</h3>
     <p style="margin: 0 0 10px 0; color: var(--text-secondary); text-align: center;">
-        Live transcription will appear below as you speak, then review before sending.
     </p>
     
     <textarea class="review-transcript" id="reviewTranscript" placeholder="No message to review yet"></textarea>
@@ -1105,27 +1632,29 @@
             id="talkButton"
             onclick="toggleRecording()"
         >
-            🎤 Start Recording
+            Start Recording
         </button>
         <button class="btn-success" onclick="sendReviewedMessage()" disabled id="sendBtn">
-            ✅ Send Message
+            Send Message
         </button>
         <button class="btn-warning" onclick="editTranscript()" disabled id="editBtn">
-            ✏️ Edit
+            Edit
         </button>
         <button class="btn-danger" onclick="deleteTranscript()" disabled id="deleteBtn">
-            🗑️ Delete & Retry
+            Delete & Retry
         </button>
     </div>
 </div>
+</div>
+</div>
                    
-                    <!-- Status display area for system messages -->
+                   <!-- Status display area for system messages -->
                     <div id="status" class="status info" style="display: none;"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-    
+                </div>  <!-- This closes the third column .card-content -->
+            </div>      <!-- This closes the third column .card -->
+        </div>          <!-- This closes the .grid -->
+    </div>              <!-- This closes the .container -->
+       
      
     <!-- Patient Image Modal -->
     <div class="image-modal" id="imageModal" onclick="closeImageModal(event)">
@@ -1152,20 +1681,38 @@
         let conversationHistory = [];     // Store all messages in the conversation
         let sheetData = [];              // Store data loaded from Google Sheets
         let sessionId = '';              // Unique session identifier for this training session
+        let currentVoiceMethod = 'text'; // Add this line
         
+        // ===== CHATBOT CONFIGURATION VARIABLES =====
+let chatbotConfigurations = [];     // Store loaded chatbot configurations
+let currentChatbotConfig = null;    // Currently selected chatbot configuration
+
+        // ===== SCENARIO SETS VARIABLES =====
+let scenarioSets = [];              // Store loaded scenario sets
+let currentScenarioSet = null;      // Currently selected scenario set
+
+// ===== D-ID STREAMING GLOBAL VARIABLES =====
+let didApiKey = '';               // D-ID API key
+let peerConnection = null;        // WebRTC peer connection
+let streamId = null;              // D-ID stream ID
+let didSessionId = null;          // D-ID session ID (renamed to avoid conflict)
+let avatarVideo = null;           // Video element reference
+let isAvatarInitialized = false;  // Track initialization status
+let isStreamConnected = false;    // Track streaming connection status
+let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
+
+        // ===== D-ID AVATAR CONFIGURATION VARIABLES =====
+let serviceType = 'talks';        // Service type (talks or clips)
+let sourceUrl = '';               // Source image URL for talks
+let presenterId = '';             // Presenter ID for clips  
+let chunkSize = 200;              // Text chunk size for streaming
+let streamingMode = true;         // Enable streaming mode
+
         // ===== SPEECH RECOGNITION VARIABLES =====
-        let recognition = null;           // Speech recognition object
-        let isRecording = false;          // Track if we're currently recording
-        let fullTranscript = '';         // Store the complete transcript during recording
-        let forceStopRecognition = false; // Flag to force stop recognition
-        
-        // ===== D-ID GLOBAL VARIABLES =====
-        let didApiKey = '';               // D-ID API key
-        let didClient = null;             // D-ID client instance
-        let avatarVideo = null;           // Video element reference
-        let currentPresenter = null;      // Selected presenter/avatar
-        let isAvatarInitialized = false;  // Track initialization status
-        let defaultPresenterUrl = 'https://clips-presenters.d-id.com/amy/image.png'; // Default avatar
+let recognition = null;           // Speech recognition object
+let isRecording = false;          // Track if we're currently recording
+let fullTranscript = '';         // Store the complete transcript during recording
+let forceStopRecognition = false; // Flag to force stop recognition
         
         // ===== STT PROVIDER VARIABLES =====
         let currentSttProvider = 'browser'; // Current STT provider (browser or deepgram)
@@ -1174,6 +1721,47 @@
         let deepgramSocket = null; // WebSocket connection to Deepgram
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
+
+        // ===== PRESENTER GENDER DATABASE =====
+// Database of presenter genders and characteristics for voice matching
+const presenterDatabase = {
+    // Female presenters
+    'amy-Aq6OmGZnMt': { gender: 'female', age: 'adult', voice: 'en-US-AriaNeural' },
+    'noelle': { gender: 'female', age: 'young', voice: 'en-US-JennyNeural' },
+    'stacey-G6mPtqx8eS': { gender: 'female', age: 'adult', voice: 'en-US-AmberNeural' },
+    'v2_public_Alyssa_NoHands_BlackShirt_Home@Mvn6Nalx90': { gender: 'female', age: 'young', voice: 'en-US-MichelleNeural' },
+    
+    // Male presenters
+    'wayne_20240711': { gender: 'male', age: 'adult', voice: 'en-US-DavisNeural' },
+    'eric-2UHNp4HyMt': { gender: 'male', age: 'young', voice: 'en-US-EricNeural' },
+    'v2_public_Adam@36wCtvjdAi': { gender: 'male', age: 'adult', voice: 'en-US-GuyNeural' },
+    'v2_public_Dylan_NoHands_GreyShirt_Home@n3_canoTl3': { gender: 'male', age: 'young', voice: 'en-US-EricNeural' },
+    
+    // Add more presenters as needed - format: 'presenter_id': { gender, age, voice }
+};
+
+// Function to get optimal voice for presenter
+function getPresenterVoice(presenterId) {
+    // Check if we have specific data for this presenter
+    if (presenterDatabase[presenterId]) {
+        return presenterDatabase[presenterId].voice;
+    }
+    
+    // Fallback: try to guess from presenter name/id
+    const lowerName = presenterId.toLowerCase();
+    if (lowerName.includes('female') || lowerName.includes('woman') || 
+        lowerName.includes('amy') || lowerName.includes('stacey') || 
+        lowerName.includes('alyssa') || lowerName.includes('noelle')) {
+        return 'en-US-AriaNeural'; // Default female voice
+    } else if (lowerName.includes('male') || lowerName.includes('man') || 
+               lowerName.includes('wayne') || lowerName.includes('eric') || 
+               lowerName.includes('adam') || lowerName.includes('dylan')) {
+        return 'en-US-DavisNeural'; // Default male voice
+    }
+    
+    // Ultimate fallback
+    return 'en-US-AriaNeural';
+}
         
         // ===== INITIALIZATION =====
         // This runs when the page loads
@@ -1197,20 +1785,14 @@
             // Initialize avatar video element reference
             avatarVideo = document.getElementById('avatarVideo');
             
-            // Check if D-ID SDK is loaded with better detection
-            setTimeout(() => {
-                if (window.didSDKLoaded && typeof DID !== 'undefined') {
-                    console.log('D-ID SDK loaded successfully');
-                    updateAvatarStatus('D-ID SDK ready - Enter API key to initialize', 'info');
-                } else if (window.didUseFallback) {
-                    console.log('D-ID SDK using fallback method');
-                    updateAvatarStatus('D-ID ready (REST API) - Enter API key to initialize', 'info');
-                } else {
-                    console.warn('D-ID SDK not loaded, using REST API fallback');
-                    window.didUseFallback = true;
-                    updateAvatarStatus('D-ID ready (fallback) - Enter API key to initialize', 'info');
-                }
-            }, 1000);
+// D-ID Streaming API is ready
+updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+
+// Initialize D-ID streaming setup
+initializeDIDElements();
+
+// Load collapsed state for configuration panel
+    loadCollapsedState();
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -1236,11 +1818,9 @@
             header.appendChild(sessionInfo);
         }
 
-        // ===== NEW SESSION FUNCTION =====
-// Function to start a new session without page refresh
-
+        // FIXED: Enhanced New Session Function with Complete Avatar Reset
 function newSession() {
-    console.log('Starting new session...');
+    console.log('=== newSession() called ===');
     
     // Generate new session ID
     generateSessionId();
@@ -1268,9 +1848,14 @@ function newSession() {
     isRecording = false;
     fullTranscript = '';
     forceStopRecognition = false;
+    recordingState = 'stopped';
+    pendingTranscript = '';
     
     // Update talk button
     updateTalkButton();
+    
+    // Hide review section
+    hideReviewSection();
     
     // Close any WebSocket connections
     if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
@@ -1290,33 +1875,77 @@ function newSession() {
         mediaRecorder = null;
     }
     
-    // D-ID Avatar specific cleanup
+    // FIXED: Complete D-ID Streaming Cleanup
+    console.log('Performing complete D-ID cleanup...');
+    
+    // Close stream connection completely
+    closeStreamConnection().then(() => {
+        console.log('Stream connection closed for new session');
+    });
+    
+    // Reset avatar initialization state
+    isAvatarInitialized = false;
+    isStreamConnected = false;
+    
+    // Clear video source completely
     if (avatarVideo) {
-        avatarVideo.pause();
+        if (avatarVideo.srcObject) {
+            avatarVideo.srcObject.getTracks().forEach(track => track.stop());
+        }
         avatarVideo.src = '';
-        avatarVideo.load();
+        avatarVideo.srcObject = null;
+        avatarVideo.load(); // Force video element reset
     }
+    
+    // Reset D-ID session variables but PRESERVE API key and configuration
+    const currentApiKey = document.getElementById('didApiKey').value;
+    const currentServiceType = document.getElementById('serviceType').value;
+    const currentSourceUrl = document.getElementById('sourceUrl').value;
+    const currentPresenterId = document.getElementById('presenterId').value;
+    const currentChunkSize = document.getElementById('chunkSize').value;
+    const currentStreamingMode = document.getElementById('streamingMode').checked;
+    const currentVoiceSelection = document.getElementById('voiceSelection').value;
+    
+    // Clear stream IDs
+    streamId = null;
+    didSessionId = null;
+    
+    // Reset to default values but preserve configuration
+    document.getElementById('didApiKey').value = currentApiKey;
+    document.getElementById('serviceType').value = currentServiceType;
+    document.getElementById('sourceUrl').value = currentSourceUrl;
+    document.getElementById('presenterId').value = currentPresenterId;
+    document.getElementById('chunkSize').value = currentChunkSize;
+    document.getElementById('streamingMode').checked = currentStreamingMode;
+    document.getElementById('voiceSelection').value = currentVoiceSelection;
+    
+    // Force update service fields display
+    updateServiceFields();
+       
+    // Update avatar status
+    if (currentApiKey) {
+        updateAvatarStatus('D-ID ready - Click "Initialize Avatar" to setup', 'info');
+    } else {
+        updateAvatarStatus('D-ID Streaming ready - Enter API key to initialize', 'info');
+    }
+
+    // Reset Initialize Avatar button to pending status
+setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
     
     // Update session info display
     updateSessionInfo();
-
-    // Reset recording state
-    recordingState = 'stopped';
-    pendingTranscript = '';
-    
-    // Hide review section
-    hideReviewSection();
     
     // Show confirmation
     showStatus(`✅ New session started! Session ID: ${sessionId}`, 'success');
     
     // Add welcome message if scenario is selected
     if (currentScenario) {
-        addMessage('New session started. Start recording to begin the consultation.', 'ai');
+        addMessage('New session started. Initialize avatar and start recording to begin the consultation.', 'ai');
     } else {
-        addMessage('New session started. Select a scenario and start recording to begin.', 'ai');
+        addMessage('New session started. Select a scenario, initialize avatar, and start recording to begin.', 'ai');
     }
     
+    console.log('=== newSession() completed ===');
     console.log('New session created:', sessionId);
 }
 
@@ -1338,17 +1967,147 @@ function updateSessionInfo() {
         // Set up various UI interactions
         
        function setupEventListeners() {
-            // Save configuration when changed
-            document.getElementById('webhookUrl').addEventListener('change', saveConfig);
-            document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
-            document.getElementById('sheetId').addEventListener('change', saveConfig);
-            document.getElementById('didApiKey').addEventListener('change', saveConfig);
-            
-            // Add new Deepgram listeners
-            document.getElementById('deepgramApiKey').addEventListener('change', saveConfig);
-            document.getElementById('deepgramModel').addEventListener('change', saveConfig);
-            document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
+    // Save configuration when changed
+    document.getElementById('webhookUrl').addEventListener('change', saveConfig);
+    document.getElementById('submitWebhookUrl').addEventListener('change', saveConfig);
+    document.getElementById('sheetId').addEventListener('change', saveConfig);
+    document.getElementById('didApiKey').addEventListener('change', saveConfig);
+    
+    // Avatar configuration event listeners
+    document.getElementById('serviceType').addEventListener('change', function() {
+        updateServiceFields();
+        saveConfig();
+    });
+    document.getElementById('sourceUrl').addEventListener('change', saveConfig);
+    document.getElementById('presenterId').addEventListener('change', saveConfig);
+    document.getElementById('chunkSize').addEventListener('change', saveConfig);
+    document.getElementById('streamingMode').addEventListener('change', saveConfig);
+    
+    // Add new Deepgram listeners
+    document.getElementById('deepgramApiKey').addEventListener('change', saveConfig);
+    document.getElementById('deepgramModel').addEventListener('change', saveConfig);
+    document.getElementById('deepgramLanguage').addEventListener('change', saveConfig);
+    document.getElementById('voiceSelection').addEventListener('change', saveConfig);  // Add this line
+
+    
+}
+
+        // ===== AVATAR CONFIGURATION FUNCTIONS =====
+
+// Initialize D-ID elements and set up event listeners
+function initializeDIDElements() {
+    console.log('Initializing D-ID elements...');
+    
+    // DON'T replace the element - just ensure event listeners are properly set
+    const serviceSelect = document.getElementById('serviceType');
+    
+    // Force update service fields based on current selection
+    setTimeout(() => {
+        console.log('Current service type on init:', serviceSelect.value);
+        updateServiceFields();
+    }, 50);
+    
+    // Add refresh button if clips is already selected
+    if (serviceSelect.value === 'clips') {
+        setTimeout(addPresenterRefreshButton, 100);
+    }
+}
+
+// FIXED: Enhanced Service Type Update with Proper Cleanup
+function updateServiceFields() {
+    const serviceTypeSelect = document.getElementById('serviceType');
+    const serviceTypeValue = serviceTypeSelect.value;
+    const imageUrlGroup = document.getElementById('imageUrlGroup');
+    const presenterGroup = document.getElementById('presenterGroup');
+    
+    console.log('=== updateServiceFields() called ===');
+    console.log('Changing service type to:', serviceTypeValue);
+    console.log('Current stream connected:', isStreamConnected);
+    console.log('Current stream ID:', streamId);
+    
+    // FIXED: Close existing stream connection when switching service types
+    if (isStreamConnected && streamId) {
+        console.log('Service type changed - closing existing stream connection...');
+        closeStreamConnection().then(() => {
+            console.log('Stream closed due to service type change');
+        });
+    }
+    
+    if (serviceTypeValue === 'talks') {
+        // Show custom image URL field, hide presenter selection
+        if (imageUrlGroup) {
+            imageUrlGroup.style.display = 'block';
+            console.log('✅ Set imageUrlGroup to block');
         }
+        if (presenterGroup) {
+            presenterGroup.style.display = 'none';
+            console.log('✅ Set presenterGroup to none');
+        }
+        console.log('Switched to Talks mode - showing URL field');
+        
+    } else if (serviceTypeValue === 'clips') {
+        // Show presenter selection, hide custom image URL field
+        if (imageUrlGroup) {
+            imageUrlGroup.style.display = 'none';
+            console.log('✅ Set imageUrlGroup to none');
+        }
+        if (presenterGroup) {
+            presenterGroup.style.display = 'block';
+            console.log('✅ Set presenterGroup to block');
+        }
+        console.log('Switched to Clips mode - showing presenter field');
+        
+        // Add refresh button if it doesn't exist
+        setTimeout(addPresenterRefreshButton, 100);
+    }
+    
+    // Update global serviceType variable
+    serviceType = serviceTypeValue;
+    
+    // Save configuration
+    saveConfig();
+    
+    console.log('=== updateServiceFields() completed ===');
+}
+
+// FIXED: Correct Avatar Configuration Reading
+function getAvatarConfiguration() {
+    const config = {
+        didApiKey: document.getElementById('didApiKey').value.trim(),
+        serviceType: document.getElementById('serviceType').value,
+        sourceUrl: document.getElementById('sourceUrl').value.trim(),
+        presenterId: document.getElementById('presenterId').value,
+        chunkSize: parseInt(document.getElementById('chunkSize').value),
+        streamingMode: document.getElementById('streamingMode').checked
+    };
+    
+    console.log('Current avatar configuration:', config);
+    return config;
+}
+
+// Text chunking function for streaming
+function splitTextIntoChunks(text, chunkSize) {
+    const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text];
+    const chunks = [];
+    let currentChunk = '';
+    
+    for (const sentence of sentences) {
+        if (currentChunk.length + sentence.length <= chunkSize) {
+            currentChunk += sentence;
+        } else {
+            if (currentChunk) {
+                chunks.push(currentChunk.trim());
+            }
+            currentChunk = sentence;
+        }
+    }
+    
+    if (currentChunk) {
+        chunks.push(currentChunk.trim());
+    }
+    
+    return chunks.filter(chunk => chunk.length > 0);
+}
         
         // ===== SPEECH RECOGNITION SETUP =====
         // Configure the browser's speech recognition API
@@ -1463,77 +2222,87 @@ function updateSessionInfo() {
         }
 
         function startRecording() {
-            if (currentSttProvider === 'deepgram') {
-                // Use Deepgram
-                if (!document.getElementById('deepgramApiKey').value) {
-                    showStatus('Please enter Deepgram API key first', 'error');
-                    return;
-                }
-                
-                if (!document.getElementById('webhookUrl').value) {
-                    showStatus('Please enter webhook URL first', 'error');
-                    return;
-                }
-                
-                if (!currentScenario) {
-                    showStatus('Please select a patient scenario first', 'error');
-                    return;
-                }
-                
-                // Clear previous data
-                fullTranscript = '';
-                pendingTranscript = '';
-                document.getElementById('reviewTranscript').innerHTML = 'Connecting to Deepgram...';
-                
-                recordingState = 'recording';
-                updateTalkButton();
-                
-                startDeepgramRecording().then(success => {
-                    if (!success) {
-                        recordingState = 'stopped';
-                        updateTalkButton();
-                    }
-                });
-                
-            } else {
-                // Use browser STT
-                if (!recognition) {
-                    showStatus('Speech recognition not available', 'error');
-                    return;
-                }
-                
-                if (!document.getElementById('webhookUrl').value) {
-                    showStatus('Please enter webhook URL first', 'error');
-                    return;
-                }
-                
-                if (!currentScenario) {
-                    showStatus('Please select a patient scenario first', 'error');
-                    return;
-                }
-                
-                // Clear previous data
-                fullTranscript = '';
-                pendingTranscript = '';
-                forceStopRecognition = false;
-                
-                // Clear review box
-                document.getElementById('reviewTranscript').value = '';
-                
-                recordingState = 'recording';
-                updateTalkButton();
-                
-                try {
-                    recognition.start();
-                    showStatus('Recording... Click "Stop Recording" when finished', 'info');
-                } catch (error) {
-                    console.error('Error starting recognition:', error);
-                    showStatus('Error starting recording', 'error');
-                    recordingState = 'stopped';
-                    updateTalkButton();
-                }
-            }
+    if (currentSttProvider === 'deepgram') {
+        // Use Deepgram
+        if (!document.getElementById('deepgramApiKey').value) {
+            showStatus('Please enter Deepgram API key first', 'error');
+            return;
         }
+        
+        if (!document.getElementById('webhookUrl').value) {
+            showStatus('Please enter webhook URL first', 'error');
+            return;
+        }
+        
+        if (!currentScenario) {
+            showStatus('Please select a patient scenario first', 'error');
+            return;
+        }
+        
+        // Clear previous data
+        fullTranscript = '';
+        pendingTranscript = '';
+        document.getElementById('reviewTranscript').innerHTML = 'Connecting to Deepgram...';
+        
+        recordingState = 'recording';
+        updateTalkButton();
+        
+        startDeepgramRecording().then(success => {
+            if (!success) {
+                recordingState = 'stopped';
+                updateTalkButton();
+            }
+        });
+        
+    } else {
+        // Use browser STT
+        if (!recognition) {
+            showStatus('Speech recognition not available', 'error');
+            return;
+        }
+        
+        if (!document.getElementById('webhookUrl').value) {
+            showStatus('Please enter webhook URL first', 'error');
+            return;
+        }
+        
+        if (!currentScenario) {
+            showStatus('Please select a patient scenario first', 'error');
+            return;
+        }
+        
+        // Check if avatar stream is connected
+if (isAvatarInitialized && !isStreamConnected) {
+    showStatus('Please connect avatar stream first using the "Connect Avatar Stream" button', 'error');
+    return;
+}
+
+proceedWithRecording();
+    }
+    
+    function proceedWithRecording() {
+        // Clear previous data
+        fullTranscript = '';
+        pendingTranscript = '';
+        forceStopRecognition = false;
+        
+        // Clear review box
+        document.getElementById('reviewTranscript').value = '';
+        
+        recordingState = 'recording';
+        updateTalkButton();
+        
+        try {
+            recognition.start();
+            showStatus('Recording... Click "Stop Recording" when finished', 'info');
+        } catch (error) {
+            console.error('Error starting recognition:', error);
+            showStatus('Error starting recording', 'error');
+            recordingState = 'stopped';
+            updateTalkButton();
+        }
+    }
+}
 
         function stopRecording() {
             if (recordingState !== 'recording') {
@@ -1621,6 +2390,27 @@ function updateSessionInfo() {
             
             console.log('STT provider changed to:', provider);
         }
+
+        // ===== VOICE METHOD SELECTION =====
+function selectVoiceMethod(method) {
+    currentVoiceMethod = method;
+    
+    // Update UI
+    document.getElementById('textInputBtn').classList.toggle('active', method === 'text');
+    document.getElementById('audioUrlBtn').classList.toggle('active', method === 'audio');
+    
+    // Show/hide configurations
+    const microsoftConfig = document.getElementById('microsoftVoiceConfig');
+    const customConfig = document.getElementById('customAudioConfig');
+    
+    if (microsoftConfig) microsoftConfig.style.display = method === 'text' ? 'block' : 'none';
+    if (customConfig) customConfig.style.display = method === 'audio' ? 'block' : 'none';
+    
+    // Save preference
+    saveConfig();
+    
+    console.log('Voice method changed to:', method);
+}
 
         // ===== DEEPGRAM INTEGRATION =====
         function initializeDeepgramSocket() {
@@ -1888,66 +2678,486 @@ document.getElementById('reviewTranscript').value = '';
 // ===== D-ID INITIALIZATION =====
         // Initialize D-ID client and video element
 
-        async function initializeDID() {
-            try {
-                console.log('Initializing D-ID...');
-                updateAvatarStatus('Initializing D-ID...', 'loading');
-                
-                // Get API key from configuration
-                didApiKey = document.getElementById('didApiKey').value;
-                
-                if (!didApiKey) {
-                    throw new Error('D-ID API key not provided');
-                }
-                
-                // Get video element
-                avatarVideo = document.getElementById('avatarVideo');
-                
-                if (!avatarVideo) {
-                    throw new Error('Avatar video element not found');
-                }
-                
-                // Check if we should use fallback method
-                if (window.didUseFallback || typeof DID === 'undefined') {
-                    console.log('Using D-ID REST API fallback method');
-                    // For now, we'll use REST API calls directly
-                    didClient = {
-                        apiKey: didApiKey,
-                        baseURL: 'https://api.d-id.com',
-                        method: 'rest'
-                    };
-                    
-                    // Test the API key by making a simple request
-                    await testDIDConnection();
-                    
-                    console.log('D-ID REST API initialized successfully');
-                    isAvatarInitialized = true;
-                    updateAvatarStatus('Avatar initialized (REST API)', 'success');
-                    
-                    return true;
-                } else {
-                    // Use SDK if available
-                    didClient = new DID.default({
-                        auth: {
-                            apiKey: didApiKey
-                        }
-                    });
-                    
-                    console.log('D-ID SDK client initialized successfully');
-                    isAvatarInitialized = true;
-                    updateAvatarStatus('Avatar initialized (SDK)', 'success');
-                    
-                    return true;
-                }
-                
-            } catch (error) {
-                console.error('D-ID initialization error:', error);
-                updateAvatarStatus(`Error: ${error.message}`, 'error');
-                isAvatarInitialized = false;
-                return false;
-            }
+        // FIXED: Enhanced Avatar Initialization with Automatic Connection
+async function initializeDID() {
+    try {
+        console.log('=== initializeDID() called ===');
+        updateAvatarStatus('Initializing D-ID Streaming...', 'loading');
+        
+        // Get API key from configuration
+        didApiKey = document.getElementById('didApiKey').value;
+        
+        if (!didApiKey) {
+            throw new Error('D-ID API key not provided');
         }
+        
+        // Get video element
+        avatarVideo = document.getElementById('avatarVideo');
+        
+        if (!avatarVideo) {
+            throw new Error('Avatar video element not found');
+        }
+        
+        // Clean up any existing connections before initializing
+        if (peerConnection || streamId) {
+            console.log('Cleaning up existing connections before initialization...');
+            await closeStreamConnection();
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        // Test the API key by making a simple request
+        await testDIDConnection();
+        
+        console.log('D-ID Streaming API initialized successfully');
+        isAvatarInitialized = true;
+        
+        // Test permissions and fetch presenters
+        try {
+            updateAvatarStatus('Testing API permissions...', 'loading');
+            await testDIDPermissions();
+            
+            const currentServiceType = document.getElementById('serviceType').value;
+            if (currentServiceType === 'clips') {
+                updateAvatarStatus('Fetching available presenters...', 'loading');
+                await fetchAvailablePresenters();
+            }
+        } catch (testError) {
+            console.warn('Permission/presenter testing failed:', testError);
+            // Continue anyway - don't fail initialization
+        }
+        
+        // AUTOMATICALLY CONNECT STREAM AFTER INITIALIZATION
+updateAvatarStatus('Initialization complete, connecting stream...', 'loading');
+await connectStream();
 
+// Set button to completed status
+setButtonCompleted('initializeAvatarBtn', 'Avatar Connected');
+
+return true;
+        
+    } catch (error) {
+        console.error('D-ID initialization error:', error);
+        updateAvatarStatus(`Error: ${error.message}`, 'error');
+isAvatarInitialized = false;
+
+// Reset button to pending status on error
+setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+return false;
+    }
+}
+
+      // ===== D-ID STREAMING CONNECTION FUNCTIONS =====
+
+// Show connect button for streaming
+function showConnectButton() {
+    const avatarContainer = document.getElementById('avatarContainer');
+    let connectBtn = document.getElementById('streamConnectBtn');
+    
+    if (!connectBtn) {
+        connectBtn = document.createElement('button');
+        connectBtn.id = 'streamConnectBtn';
+        connectBtn.className = 'btn-primary';
+        connectBtn.style.marginTop = '15px';
+        connectBtn.innerHTML = '🔗 Connect Stream';
+        connectBtn.onclick = connectStream;
+        avatarContainer.appendChild(connectBtn);
+    }
+    
+    connectBtn.style.display = 'block';
+}
+
+// Hide connect button for simplified workflow
+function hideConnectButton() {
+    const connectBtn = document.getElementById('streamConnectBtn');
+    if (connectBtn) {
+        connectBtn.style.display = 'none';
+    }
+}   
+        
+// FIXED: Enhanced Stream Connection with Proper Service Detection and Cleanup
+async function connectStream() {
+    console.log('=== connectStream() called ===');
+    
+    // Always close existing connection first, regardless of state
+    if (peerConnection) {
+        console.log('Closing existing peer connection before creating new one...');
+        await closeStreamConnection();
+        // Wait for cleanup to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+    }
+    
+    try {
+        updateAvatarStatus('Connecting to D-ID stream...', 'loading');
+        
+        // FIXED: Get FRESH configuration values from form
+        const config = getAvatarConfiguration();
+        didApiKey = config.didApiKey;
+        
+        if (!didApiKey) {
+            throw new Error('D-ID API key not provided');
+        }
+        
+        console.log('Using service type:', config.serviceType);
+        console.log('Using presenter ID:', config.presenterId);
+        console.log('Using source URL:', config.sourceUrl);
+        
+        // FIXED: Clear any existing stream data before creating new stream
+        streamId = null;
+        didSessionId = null;
+        
+        // Prepare request payload based on service type
+        let payload = {
+            stream_warmup: true
+        };
+        
+        let streamUrl = '';
+        
+        if (config.serviceType === 'talks') {
+            if (!config.sourceUrl) {
+                throw new Error('Source image URL is required for talks service');
+            }
+            payload.source_url = config.sourceUrl;
+            streamUrl = 'https://api.d-id.com/talks/streams';
+            console.log('Talks payload:', payload);
+            
+        } else if (config.serviceType === 'clips') {
+            if (!config.presenterId) {
+                throw new Error('Presenter selection is required for clips service');
+            }
+            
+            // FIXED: Correct payload structure for Clips API
+            payload.presenter_id = config.presenterId;
+            
+            // Try to get a driver for this presenter
+            try {
+                const driverId = await getPresenterDrivers(config.presenterId);
+                if (driverId) {
+                    payload.driver_id = driverId;
+                    console.log('Using driver ID:', driverId);
+                }
+            } catch (driverError) {
+                console.warn('Could not get driver for presenter:', driverError);
+                // Continue without driver - it's optional
+            }
+            
+            streamUrl = 'https://api.d-id.com/clips/streams';
+            console.log('Clips payload:', payload);
+        } else {
+            throw new Error('Invalid service type selected');
+        }
+        
+        // Step 1: Create a new stream
+        console.log('Creating stream at URL:', streamUrl);
+        
+        const sessionResponse = await fetch(streamUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+        
+        if (!sessionResponse.ok) {
+            const errorText = await sessionResponse.text();
+            console.error('Stream creation error:', errorText);
+            throw new Error(`Failed to create stream: ${sessionResponse.status} - ${errorText}`);
+        }
+        
+        const streamResponse = await sessionResponse.json();
+        const { id: newStreamId, offer, ice_servers: iceServers, session_id: newSessionId } = streamResponse;
+        
+        // FIXED: Store the new stream data
+        streamId = newStreamId;
+        didSessionId = newSessionId;
+        
+        console.log('Stream created successfully:', { 
+            streamId, 
+            didSessionId, 
+            serviceType: config.serviceType,
+            hasOffer: !!offer,
+            iceServersCount: iceServers?.length || 0
+        });
+        
+        // Step 2: Create peer connection and set up WebRTC
+        const sessionClientAnswer = await createPeerConnection(offer, iceServers);
+        
+        // Step 3: Send SDP answer
+        const sdpUrl = `${streamUrl}/${streamId}/sdp`;
+        const sdpResponse = await fetch(sdpUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                answer: sessionClientAnswer,
+                session_id: didSessionId,
+            }),
+        });
+        
+        if (!sdpResponse.ok) {
+            const errorText = await sdpResponse.text();
+            console.error('SDP error:', errorText);
+            throw new Error(`Failed to send SDP answer: ${sdpResponse.status} - ${errorText}`);
+        }
+        
+        console.log('SDP answer sent successfully');
+        updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+        
+    } catch (error) {
+        console.error('Stream connection error:', error);
+        updateAvatarStatus(`Connection error: ${error.message}`, 'error');
+        
+        // FIXED: Ensure cleanup on error
+        await closeStreamConnection();
+    }
+}
+
+// FIXED: Enhanced Peer Connection Creation with Better Cleanup
+async function createPeerConnection(offer, iceServers) {
+    console.log('=== createPeerConnection() called ===');
+    
+    // FIXED: Always close existing connection first
+    if (peerConnection) {
+        console.log('Closing existing peer connection...');
+        peerConnection.close();
+        peerConnection = null;
+        // Wait for cleanup
+        await new Promise(resolve => setTimeout(resolve, 500));
+    }
+    
+    // Create new peer connection
+    peerConnection = new RTCPeerConnection({ iceServers });
+    console.log('Created new peer connection with ice servers:', iceServers);
+    
+    // Set up event listeners
+    peerConnection.addEventListener('icegatheringstatechange', onIceGatheringStateChange);
+    peerConnection.addEventListener('icecandidate', onIceCandidate);
+    peerConnection.addEventListener('iceconnectionstatechange', onIceConnectionStateChange);
+    peerConnection.addEventListener('connectionstatechange', onConnectionStateChange);
+    peerConnection.addEventListener('signalingstatechange', onSignalingStateChange);
+    peerConnection.addEventListener('track', onTrack);
+    
+    await peerConnection.setRemoteDescription(offer);
+    console.log('Set remote SDP OK');
+    
+    const sessionClientAnswer = await peerConnection.createAnswer();
+    console.log('Create local SDP OK');
+    
+    await peerConnection.setLocalDescription(sessionClientAnswer);
+    console.log('Set local SDP OK');
+    
+    return sessionClientAnswer;
+}
+
+// WebRTC event handlers
+function onIceGatheringStateChange() {
+    console.log('ICE gathering state:', peerConnection.iceGatheringState);
+}
+
+// FIXED: Enhanced ICE Candidate Handler with Better Error Handling
+function onIceCandidate(event) {
+    console.log('ICE candidate event:', event);
+    
+    if (event.candidate && streamId && didSessionId) {
+        const { candidate, sdpMid, sdpMLineIndex } = event.candidate;
+        
+        // Get current service type at the time of sending
+        const currentServiceType = document.getElementById('serviceType').value;
+        
+        console.log('Sending ICE candidate for service type:', currentServiceType);
+        
+        fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}/ice`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                candidate,
+                sdpMid,
+                sdpMLineIndex,
+                session_id: didSessionId,
+            }),
+        }).then(response => {
+            if (response.ok) {
+                console.log('ICE candidate sent successfully');
+            } else {
+                console.error('Failed to send ICE candidate:', response.status);
+            }
+        }).catch(error => {
+            console.error('Error sending ICE candidate:', error);
+        });
+    } else {
+        console.log('ICE candidate not sent - missing required data:', {
+            hasCandidate: !!event.candidate,
+            streamId,
+            didSessionId
+        });
+    }
+}
+
+// FIXED: Enhanced Connection State Handler
+function onIceConnectionStateChange() {
+    console.log('ICE connection state changed to:', peerConnection.iceConnectionState);
+    
+    if (peerConnection.iceConnectionState === 'connected' || peerConnection.iceConnectionState === 'completed') {
+        isStreamConnected = true;
+        const currentServiceType = document.getElementById('serviceType').value;
+        updateAvatarStatus(`${currentServiceType.toUpperCase()} stream ready for speech`, 'success');
+        console.log('Stream connection established successfully');
+        
+    } else if (peerConnection.iceConnectionState === 'failed' || peerConnection.iceConnectionState === 'closed') {
+        isStreamConnected = false;
+        updateAvatarStatus('Stream connection lost', 'error');
+        console.log('Stream connection lost or failed');
+        
+        // Auto-cleanup on failure
+        setTimeout(() => {
+            closeStreamConnection();
+        }, 1000);
+    }
+}
+
+function onConnectionStateChange() {
+    console.log('Connection state:', peerConnection.connectionState);
+}
+
+function onSignalingStateChange() {
+    console.log('Signaling state:', peerConnection.signalingState);
+}
+
+function onTrack(event) {
+    console.log('Received remote stream');
+    const remoteStream = event.streams[0];
+    setVideoElement(remoteStream);
+}
+
+function setVideoElement(stream) {
+    if (!stream || !avatarVideo) return;
+    
+    avatarVideo.srcObject = stream;
+    avatarVideo.muted = false;
+    avatarVideo.volume = 0.8;
+    
+    // Safari hotfix
+    if (avatarVideo.paused) {
+        avatarVideo.play().then(() => {
+            console.log('Video playback started');
+        }).catch(error => {
+            console.error('Video play failed:', error);
+        });
+    }
+}
+        
+
+function onSignalingStateChange() {
+    console.log('Signaling state:', peerConnection.signalingState);
+}
+
+function onTrack(event) {
+    console.log('Received remote stream');
+    const remoteStream = event.streams[0];
+    setVideoElement(remoteStream);
+}
+
+function setVideoElement(stream) {
+    if (!stream || !avatarVideo) return;
+    
+    avatarVideo.srcObject = stream;
+    avatarVideo.muted = false;
+    avatarVideo.volume = 0.8;
+    
+    // Safari hotfix
+    if (avatarVideo.paused) {
+        avatarVideo.play().then(() => {
+            console.log('Video playback started');
+        }).catch(error => {
+            console.error('Video play failed:', error);
+        });
+    }
+}
+
+// FIXED: Enhanced Close Stream Connection with Proper Service Detection and Cleanup
+async function closeStreamConnection() {
+    console.log('=== closeStreamConnection() called ===');
+    
+    // Get current service type BEFORE clearing variables
+    const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
+    console.log('Closing stream connection for service type:', currentServiceType);
+    
+    // Reset connection state immediately
+    isStreamConnected = false;
+    
+    // Clean up video element
+    if (avatarVideo && avatarVideo.srcObject) {
+        console.log('Stopping video tracks...');
+        avatarVideo.srcObject.getTracks().forEach(track => {
+            track.stop();
+            console.log('Stopped track:', track.kind);
+        });
+        avatarVideo.srcObject = null;
+        avatarVideo.src = '';
+    }
+    
+    // Clean up peer connection
+    if (peerConnection) {
+        console.log('Closing peer connection...');
+        
+        // Remove all event listeners first
+        peerConnection.removeEventListener('icegatheringstatechange', onIceGatheringStateChange);
+        peerConnection.removeEventListener('icecandidate', onIceCandidate);
+        peerConnection.removeEventListener('iceconnectionstatechange', onIceConnectionStateChange);
+        peerConnection.removeEventListener('connectionstatechange', onConnectionStateChange);
+        peerConnection.removeEventListener('signalingstatechange', onSignalingStateChange);
+        peerConnection.removeEventListener('track', onTrack);
+        
+        // Close the connection
+        peerConnection.close();
+        peerConnection = null;
+        console.log('Peer connection closed and nullified');
+    }
+    
+    // Delete stream on server if we have IDs
+    if (streamId && didSessionId) {
+        console.log('Deleting stream on server:', streamId);
+        const deleteUrl = `https://api.d-id.com/${currentServiceType}/streams/${streamId}`;
+        
+        try {
+            const deleteResponse = await fetch(deleteUrl, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Basic ${didApiKey}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ session_id: didSessionId }),
+            });
+            
+            if (deleteResponse.ok) {
+                console.log('Stream deleted successfully on server');
+            } else {
+                console.warn('Failed to delete stream on server:', deleteResponse.status);
+            }
+        } catch (error) {
+            console.error('Error deleting stream on server:', error);
+        }
+    }
+    
+    // Clear stream variables
+    streamId = null;
+    didSessionId = null;
+    
+    console.log('Stream cleanup completed');
+
+// Reset initialize button if avatar was initialized
+if (isAvatarInitialized) {
+    setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+    isAvatarInitialized = false;
+    updateAvatarStatus('Connection closed - Re-initialize avatar to reconnect', 'info');
+}
+} 
+        
         // Test D-ID API connection
         async function testDIDConnection() {
             try {
@@ -1973,44 +3183,166 @@ document.getElementById('reviewTranscript').value = '';
         // ===== D-ID AVATAR SPEECH FUNCTIONS =====
         // Generate and play avatar speech
 
-        async function speakWithAvatar(text) {
-            if (!isAvatarInitialized || !didApiKey) {
-                console.log('Avatar not initialized, skipping speech');
-                return;
-            }
+        // FIXED: Speech Function with Proper Voice Handling
+async function speakWithAvatar(text) {
+    if (!isAvatarInitialized || !didApiKey) {
+        console.log('Avatar not initialized, skipping speech');
+        return;
+    }
+    
+    if (!isStreamConnected || !streamId || !didSessionId) {
+        console.log('Stream not connected, attempting to connect...');
+        await connectStream();
+        
+        // Wait a moment for connection to establish
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        if (!isStreamConnected) {
+            console.error('Failed to establish stream connection');
+            updateAvatarStatus('Connection failed - check API key and network', 'error');
+            return;
+        }
+    }
 
-            try {
-                console.log('Generating avatar speech for:', text);
-                updateAvatarStatus('Generating avatar speech...', 'loading');
+    try {
+        console.log('Sending text to D-ID stream:', text);
+        
+        // FIXED: Get FRESH configuration for each speech request
+        const config = getAvatarConfiguration();
+        console.log('Using service type for speech:', config.serviceType);
+        updateAvatarStatus('Generating speech...', 'loading');
 
-                // Create talk using D-ID REST API
-                const talkResponse = await createTalk(text);
-                
-                if (talkResponse && talkResponse.id) {
-                    console.log('Talk created successfully:', talkResponse.id);
-                    
-                    // Wait for video generation to complete
-                    const videoUrl = await waitForTalkCompletion(talkResponse.id);
-                    
-                    if (videoUrl) {
-                        // Play the generated video
-                        await playAvatarVideo(videoUrl);
-                    }
-                } else {
-                    throw new Error('Failed to create talk');
-                }
+       
+        // Enhanced Voice Selection Logic
+let voiceConfig = {
+    type: 'microsoft',
+    voice_id: 'en-US-AriaNeural' // Default voice
+};
 
-            } catch (error) {
-                console.error('Avatar speech error:', error);
-                updateAvatarStatus(`Speech error: ${error.message}`, 'error');
-                
-                // Reset status after a delay
-                setTimeout(() => {
-                    updateAvatarStatus('Avatar ready', 'info');
-                }, 3000);
-            }
+// Check if user has manually selected a specific voice
+const manualVoiceSelection = document.getElementById('voiceSelection').value;
+
+if (manualVoiceSelection) {
+    // User has manually selected a voice - use it
+    voiceConfig.voice_id = manualVoiceSelection;
+    console.log('Using manually selected voice:', manualVoiceSelection);
+    
+} else {
+    // Auto voice selection based on service type and presenter
+    if (config.serviceType === 'clips' && config.presenterId) {
+        // Use the presenter database for voice matching
+        const optimalVoice = getPresenterVoice(config.presenterId);
+        voiceConfig.voice_id = optimalVoice;
+        
+        console.log('Auto-selected voice for presenter:', config.presenterId, '->', optimalVoice);
+        
+        // Log presenter info if available
+        if (presenterDatabase[config.presenterId]) {
+            const presenterInfo = presenterDatabase[config.presenterId];
+            console.log('Presenter details:', presenterInfo);
+        }
+        
+    } else if (config.serviceType === 'talks') {
+        // For talks with custom image, try to determine gender from image or use default
+        voiceConfig.voice_id = 'en-US-AriaNeural'; // Default professional female voice
+        console.log('Using default voice for talks service');
+    }
+}
+
+console.log('Final voice configuration:', voiceConfig);
+
+        // Prepare the script payload
+        let scriptPayload = {
+            script: {
+                type: 'text',
+                input: text,
+                provider: voiceConfig
+            },
+            config: {
+                stitch: true,
+            },
+            session_id: didSessionId
+        };
+
+        // Add driver URL only for talks service
+        if (config.serviceType === 'talks') {
+            scriptPayload.driver_url = 'bank://lively/';
         }
 
+        console.log('Script payload:', scriptPayload);
+
+        // FIXED: Use correct endpoint based on service type
+        const talkUrl = `https://api.d-id.com/${config.serviceType}/streams/${streamId}`;
+        const talkResponse = await fetch(talkUrl, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(scriptPayload),
+        });
+
+        if (!talkResponse.ok) {
+            const errorText = await talkResponse.text();
+            console.error('Talk stream error:', errorText);
+            throw new Error(`Talk stream failed: ${talkResponse.status} - ${errorText}`);
+        }
+
+        console.log('Talk stream sent successfully');
+        updateAvatarStatus('Speaking...', 'playing');
+
+        // The video will automatically appear via the WebRTC stream
+        // Monitor for video events to update status
+        if (avatarVideo) {
+            const handleVideoPlay = () => {
+                updateAvatarStatus(`Avatar speaking (${config.serviceType})...`, 'playing');
+                avatarVideo.removeEventListener('play', handleVideoPlay);
+            };
+            
+            const handleVideoEnd = () => {
+                updateAvatarStatus('Avatar ready', 'info');
+                avatarVideo.removeEventListener('ended', handleVideoEnd);
+            };
+            
+            avatarVideo.addEventListener('play', handleVideoPlay);
+            avatarVideo.addEventListener('ended', handleVideoEnd);
+        }
+
+    } catch (error) {
+        console.error('Avatar speech error:', error);
+        updateAvatarStatus(`Speech error: ${error.message}`, 'error');
+        
+        // Reset status after a delay
+        setTimeout(() => {
+            updateAvatarStatus('Avatar ready', 'info');
+        }, 3000);
+    }
+}
+
+        // NEW: Function to get available drivers for a presenter
+async function getPresenterDrivers(presenterId) {
+    try {
+        const response = await fetch(`https://api.d-id.com/clips/presenters/${presenterId}/drivers`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (response.ok) {
+            const drivers = await response.json();
+            console.log('Available drivers for', presenterId, ':', drivers);
+            return drivers.length > 0 ? drivers[0].driver_id : null;
+        } else {
+            console.log('No drivers endpoint available or access denied');
+        }
+    } catch (error) {
+        console.error('Error fetching drivers:', error);
+    }
+    return null;
+}
+        
         // Create a new talk using D-ID REST API
         async function createTalk(text) {
             try {
@@ -2174,6 +3506,321 @@ document.getElementById('reviewTranscript').value = '';
             }
         }
 
+        // Update avatar status display
+        function updateAvatarStatus(message, type = 'info') {
+            const statusElement = document.getElementById('avatarStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `avatar-status ${type}`;
+            }
+        }
+
+// ===== PRESENTER VERIFICATION AND API TESTING =====
+// INSERT THE NEW FUNCTIONS HERE
+
+// IMPROVED: Enhanced presenter fetching with better error handling
+async function fetchAvailablePresenters() {
+    const apiKey = document.getElementById('didApiKey').value;
+    
+    if (!apiKey) {
+        showStatus('Please enter D-ID API key first', 'error');
+        return;
+    }
+    
+    try {
+        showStatus('Fetching available presenters...', 'info');
+        
+        // Fetch presenters from D-ID API
+        const response = await fetch('https://api.d-id.com/clips/presenters?limit=100', {
+            method: 'GET',
+            headers: {
+                'Authorization': `Basic ${apiKey}`,
+                'Content-Type': 'application/json'
+            }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`API request failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Available presenters:', data);
+        
+        // Update the presenter dropdown
+        const presenters = data.presenters || data;
+        updatePresenterDropdown(presenters);
+        
+        showStatus(`Found ${presenters.length} available presenters`, 'success');
+        
+    } catch (error) {
+        console.error('Error fetching presenters:', error);
+        showStatus(`Error fetching presenters: ${error.message}`, 'error');
+        
+        // Fallback to known working presenters
+        console.log('Using fallback presenter list');
+        const fallbackPresenters = [
+            { id: 'noelle', name: 'Noelle (Default)' },
+            { id: 'amy-Aq6OmGZnMt', name: 'Amy (Professional)' },
+            { id: 'eric-2UHNp4HyMt', name: 'Eric (Casual)' },
+            { id: 'stacey-G6mPtqx8eS', name: 'Stacey (Friendly)' },
+            { id: 'wayne_20240711', name: 'Wayne (Recommended)' }
+        ];
+        updatePresenterDropdown(fallbackPresenters);
+    }
+}
+
+// Function to update presenter dropdown with fetched data
+function updatePresenterDropdown(presenters) {
+    const select = document.getElementById('presenterId');
+    select.innerHTML = '<option value="">Select presenter...</option>';
+    
+    presenters.forEach(presenter => {
+        const option = document.createElement('option');
+        option.value = presenter.id || presenter.presenter_id;
+        option.textContent = presenter.name || `${presenter.id} (${presenter.gender || 'Unknown'})`;
+        select.appendChild(option);
+    });
+}
+
+// Add refresh button to presenter group
+function addPresenterRefreshButton() {
+    const presenterGroup = document.getElementById('presenterGroup');
+    
+    // Check if button already exists
+    if (document.getElementById('refreshPresentersBtn')) return;
+    
+    const refreshBtn = document.createElement('button');
+    refreshBtn.id = 'refreshPresentersBtn';
+    refreshBtn.type = 'button';
+    refreshBtn.className = 'btn-secondary';
+    refreshBtn.innerHTML = '🔄 Refresh Presenters';
+    refreshBtn.style.marginTop = '10px';
+    refreshBtn.style.width = '100%';
+    refreshBtn.onclick = fetchAvailablePresenters;
+    
+    presenterGroup.appendChild(refreshBtn);
+}
+
+// Enhanced API key testing with permissions check
+// Enhanced API key testing with correct permissions check
+async function testDIDPermissions() {
+    const apiKey = document.getElementById('didApiKey').value;
+    
+    if (!apiKey) {
+        showStatus('Please enter D-ID API key first', 'error');
+        return;
+    }
+    
+    updateAvatarStatus('Testing API permissions...', 'loading');
+    
+    const testResults = {
+        talks: false,
+        clips: false,
+        streams: false
+    };
+    
+    try {
+        // Test 1: Basic Talks API access
+        console.log('Testing Talks API...');
+        try {
+            const talksResponse = await fetch('https://api.d-id.com/talks', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            testResults.talks = talksResponse.ok;
+            console.log('Talks API access:', testResults.talks ? 'OK' : `DENIED (${talksResponse.status})`);
+        } catch (error) {
+            console.log('Talks API error:', error.message);
+            testResults.talks = false;
+        }
+        
+        // Test 2: Basic Clips API access
+        console.log('Testing Clips API...');
+        try {
+            const clipsResponse = await fetch('https://api.d-id.com/clips', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+            testResults.clips = clipsResponse.ok;
+            console.log('Clips API access:', testResults.clips ? 'OK' : `DENIED (${clipsResponse.status})`);
+        } catch (error) {
+            console.log('Clips API error:', error.message);
+            testResults.clips = false;
+        }
+        
+        // Test 3: Streams API access - Test by trying to create a minimal stream
+        console.log('Testing Streams API (creating test stream)...');
+        try {
+            // Try creating a minimal talks stream first
+            const talksStreamResponse = await fetch('https://api.d-id.com/talks/streams', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Basic ${apiKey}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    source_url: 'https://clips-presenters.d-id.com/amy/image.png',
+                    stream_warmup: true
+                })
+            });
+            
+            if (talksStreamResponse.ok) {
+                const streamData = await talksStreamResponse.json();
+                console.log('Talks Streams API: OK');
+                testResults.streams = true;
+                
+                // Clean up the test stream
+                setTimeout(() => {
+                    fetch(`https://api.d-id.com/talks/streams/${streamData.id}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Basic ${apiKey}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ session_id: streamData.session_id })
+                    }).catch(err => console.log('Stream cleanup error:', err));
+                }, 1000);
+                
+            } else {
+                console.log('Talks Streams API: DENIED', talksStreamResponse.status);
+                
+                // If talks streams fail, try clips streams
+                const clipsStreamResponse = await fetch('https://api.d-id.com/clips/streams', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Basic ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        presenter: {
+                            type: 'clip',
+                            clip_id: 'noelle'
+                        },
+                        stream_warmup: true
+                    })
+                });
+                
+                if (clipsStreamResponse.ok) {
+                    const streamData = await clipsStreamResponse.json();
+                    console.log('Clips Streams API: OK');
+                    testResults.streams = true;
+                    
+                    // Clean up the test stream
+                    setTimeout(() => {
+                        fetch(`https://api.d-id.com/clips/streams/${streamData.id}`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Basic ${apiKey}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ session_id: streamData.session_id })
+                        }).catch(err => console.log('Stream cleanup error:', err));
+                    }, 1000);
+                } else {
+                    console.log('Clips Streams API: DENIED', clipsStreamResponse.status);
+                    testResults.streams = false;
+                }
+            }
+            
+        } catch (error) {
+            console.log('Streams API error:', error.message);
+            testResults.streams = false;
+        }
+        
+        // Display results
+        displayPermissionResults(testResults);
+        
+    } catch (error) {
+        console.error('Permission testing error:', error);
+        updateAvatarStatus(`Permission test failed: ${error.message}`, 'error');
+    }
+}
+
+function displayPermissionResults(results) {
+    const permissions = [];
+    
+    if (results.talks) permissions.push('✅ Talks API');
+    else permissions.push('❌ Talks API (No access)');
+    
+    if (results.clips) permissions.push('✅ Clips API');
+    else permissions.push('❌ Clips API (No access)');
+    
+    if (results.streams) permissions.push('✅ Streams API');
+    else permissions.push('❌ Streams API (No access)');
+    
+    const message = `API Permissions:\n${permissions.join('\n')}`;
+    console.log(message);
+    
+    // Update UI
+    const hasAllPermissions = results.talks && results.clips && results.streams;
+    if (hasAllPermissions) {
+        updateAvatarStatus('All API permissions verified ✅', 'success');
+        showStatus('API key has full access to all services', 'success');
+    } else {
+        updateAvatarStatus('Permissions checked - see console for details', 'info');
+        
+        // Show specific missing permissions
+        const missing = [];
+        if (!results.talks) missing.push('Talks');
+        if (!results.clips) missing.push('Clips');
+        if (!results.streams) missing.push('Streams');
+        
+        if (missing.length > 0) {
+            console.warn(`Limited permissions for: ${missing.join(', ')}`);
+            showStatus(`Limited access: ${missing.join(', ')} - check D-ID plan`, 'error');
+        } else {
+            showStatus('All basic APIs accessible', 'success');
+        }
+    }
+    
+    // Update service availability in UI
+    updateServiceAvailability(results);
+}
+
+function updateServiceAvailability(results) {
+    const serviceSelect = document.getElementById('serviceType');
+    
+    // Reset options first
+    serviceSelect.innerHTML = `
+        <option value="talks">Talks (Custom Image)</option>
+        <option value="clips">Clips (Preset Avatars)</option>
+    `;
+    
+    const options = serviceSelect.options;
+    
+    // Disable unavailable services
+    for (let i = 0; i < options.length; i++) {
+        const option = options[i];
+        if (option.value === 'talks' && (!results.talks || !results.streams)) {
+            option.disabled = true;
+            option.textContent += ' (Limited Access)';
+        } else if (option.value === 'clips' && (!results.clips || !results.streams)) {
+            option.disabled = true;
+            option.textContent += ' (Limited Access)';
+        }
+    }
+    
+    // Switch to available service if current selection is unavailable
+    const currentService = serviceSelect.value;
+    if ((currentService === 'talks' && (!results.talks || !results.streams)) || 
+        (currentService === 'clips' && (!results.clips || !results.streams))) {
+        
+        // Find an available service
+        if (results.talks && results.streams) {
+            serviceSelect.value = 'talks';
+        } else if (results.clips && results.streams) {
+            serviceSelect.value = 'clips';
+        }
+        updateServiceFields();
+    }
+}
+
 // ===== GOOGLE SHEETS INTEGRATION =====
         // Load sheet names from Google Sheets
         
@@ -2305,7 +3952,29 @@ document.getElementById('reviewTranscript').value = '';
                 const option = document.createElement('option');
                 option.value = i;
                 // Use column A (index 0) for the scenario name
-                option.textContent = `${i}. ${row[0]}`;
+                // Use column A (index 0) for the scenario name, add avatar, voice, and image indicators
+const hasAvatar = row.some((cell, index) => {
+    const header = sheetData[0][index];
+    return header && (header.includes('Avatar') || header.includes('Source URL')) && cell && cell.trim() !== '';
+});
+
+const hasVoice = row.some((cell, index) => {
+    const header = sheetData[0][index];
+    return header && (header.includes('Voice') || header === 'TTS Voice' || header === 'Voice ID') && cell && cell.trim() !== '';
+});
+
+const hasPatientImage = row.some((cell, index) => {
+    const header = sheetData[0][index];
+    return header && (header.includes('Patient Image') || header.includes('Image URL') || header.includes('Photo URL') || header.includes('Image') || header.includes('Photo') || header.includes('Picture URL') || header.includes('Picture')) && cell && cell.trim() !== '';
+});
+
+let indicators = '';
+if (hasAvatar) indicators += ' 🎭';
+if (hasVoice) indicators += ' 🎤';
+if (hasPatientImage) indicators += ' 📷';
+
+option.textContent = `${i}. ${row[0]}${indicators}`;
+                
                 select.appendChild(option);
             }
             
@@ -2324,27 +3993,38 @@ document.getElementById('reviewTranscript').value = '';
         
         // Handle scenario selection
         function selectScenario(rowIndex) {
-            const headers = sheetData[0];
-            const row = sheetData[rowIndex];
-            
-            // Create scenario object
-            currentScenario = {};
-            headers.forEach((header, index) => {
-                currentScenario[header] = row[index];
-            });
-            
-            console.log('Selected scenario:', currentScenario);
-            showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
-            
-            // Update patient image button based on image availability
-            updatePatientImageButton();
-            
-            // Clear previous conversation
-            clearChat();
-            
-            // Add initial message
-            addMessage('Scenario loaded. Hold the talk button to start the consultation.', 'ai');
-        }
+    const headers = sheetData[0];
+    const row = sheetData[rowIndex];
+    
+    // Create scenario object
+    currentScenario = {};
+    headers.forEach((header, index) => {
+        currentScenario[header] = row[index];
+    });
+    
+    console.log('Selected scenario:', currentScenario);
+    showStatus(`Scenario loaded: ${currentScenario['Patient Name']}`, 'success');
+    
+    // Update patient image button based on image availability
+    updatePatientImageButton();
+    
+    // Update avatar source URL if provided in sheet
+updateAvatarFromScenario();
+
+// Reset avatar initialization when scenario changes
+if (isAvatarInitialized) {
+    setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar');
+    isAvatarInitialized = false;
+    isStreamConnected = false;
+    updateAvatarStatus('Scenario changed - Re-initialize avatar with new settings', 'info');
+}
+
+// Clear previous conversation
+clearChat();
+    
+    // Add initial message
+    addMessage('Scenario loaded. Press the start recoding button to start the consultation.', 'ai');
+}     
         
         // ===== MULTI-IMAGE PATIENT GALLERY =====
 // Global variables for image gallery
@@ -2385,7 +4065,7 @@ function updatePatientImageButton() {
             if (patientImages.length === 1) {
                 button.innerHTML = '👁️ View Patient Image';
             } else {
-                button.innerHTML = `👁️ View Patient Images (${patientImages.length})`;
+                button.innerHTML = `View Patient Images (${patientImages.length})`;
             }
             button.disabled = false;
         } else {
@@ -2656,26 +4336,326 @@ document.addEventListener('keydown', function(event) {
         }
     }
 });
+
+       // ===== CHATBOT CONFIGURATION MANAGEMENT =====
+
+// Load chatbot configurations from Google Sheet
+async function loadChatbotConfigurations() {
+    const configSheetId = document.getElementById('configSheetId').value;
+    
+    if (!configSheetId) {
+        showStatus('Please enter Configuration Sheet ID first', 'error');
+        return;
+    }
+    
+    // Disable the load button and show loading state
+    const loadBtn = document.getElementById('loadChatbotBtn');
+    const originalText = loadBtn.innerHTML;
+    loadBtn.disabled = true;
+    loadBtn.innerHTML = '⏳ Loading...';
+    
+    showStatus('Loading chatbot configurations...', 'info');
+    
+    try {
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // Your existing API key
         
-        // Select a random scenario
-        function selectRandomScenario() {
-            if (sheetData.length <= 1) {
-                showStatus('Please load sheet data first', 'error');
-                return;
+        // Load from the first sheet (you could also make this configurable)
+        const url = `https://sheets.googleapis.com/v4/spreadsheets/${configSheetId}/values/Sheet1?key=${apiKey}`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.values && data.values.length > 1) {
+            // Process the configuration data
+            chatbotConfigurations = [];
+            
+            // Skip header row, process configuration rows
+            for (let i = 1; i < data.values.length; i++) {
+                const row = data.values[i];
+                if (row.length >= 3 && row[0] && row[1] && row[2]) {
+                    chatbotConfigurations.push({
+                        name: row[0].trim(),
+                        webhookUrl: row[1].trim(),
+                        submitWebhookUrl: row[2].trim(),
+                        description: row[3] ? row[3].trim() : '' // Optional description column
+                    });
+                }
             }
             
-            // Generate random index (skip header row at index 0)
-            const randomIndex = Math.floor(Math.random() * (sheetData.length - 1)) + 1;
-            
-            // Update dropdown to show selected scenario
-            document.getElementById('scenarioSelect').value = randomIndex;
-            
-            // Select the scenario
-            selectScenario(randomIndex);
-            
-            showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
-        }
+            populateChatbotDropdown();
+showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
 
+// Set button to completed status
+setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+
+// Try to restore saved selection
+const savedConfig = localStorage.getItem('pharmacyChatConfig');
+if (savedConfig) {
+    const config = JSON.parse(savedConfig);
+    if (config.selectedChatbot) {
+        document.getElementById('chatbotSelect').value = config.selectedChatbot;
+    }
+}
+            
+        } else {
+            showStatus('No configuration data found in the sheet', 'error');
+        }
+        
+    } catch (error) {
+    console.error('Error loading chatbot configurations:', error);
+    showStatus('Error loading configurations. Check console for details.', 'error');
+    
+    // Set button back to pending status on error
+setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
+}
+} // ADD THIS MISSING CLOSING BRACE
+
+// Populate the chatbot selection dropdown
+function populateChatbotDropdown() {
+    const select = document.getElementById('chatbotSelect');
+    select.innerHTML = '<option value="">Select a chatbot configuration...</option>';
+    select.disabled = false;
+    
+    chatbotConfigurations.forEach((config, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Show name and description if available
+        if (config.description) {
+            option.textContent = `${config.name} - ${config.description}`;
+        } else {
+            option.textContent = config.name;
+        }
+        
+        select.appendChild(option);
+    });
+    
+    // Enable the apply button when a selection is available
+    document.getElementById('applyChatbotBtn').disabled = false;
+    
+    // Add change event listener
+    select.addEventListener('change', function() {
+        const applyBtn = document.getElementById('applyChatbotBtn');
+        if (this.value !== '') {
+            applyBtn.disabled = false;
+            applyBtn.textContent = `✅ Apply ${chatbotConfigurations[this.value].name}`;
+        } else {
+            applyBtn.disabled = true;
+            applyBtn.textContent = '✅ Apply Selected Configuration';
+        }
+    });
+}
+
+// Apply the selected chatbot configuration
+function applyChatbotConfiguration() {
+    const selectElement = document.getElementById('chatbotSelect');
+    const selectedIndex = selectElement.value;
+    
+    if (selectedIndex === '' || !chatbotConfigurations[selectedIndex]) {
+        showStatus('Please select a chatbot configuration first', 'error');
+        return;
+    }
+    
+    const config = chatbotConfigurations[selectedIndex];
+    currentChatbotConfig = config;
+    
+    // Apply the configuration to the existing webhook fields
+    document.getElementById('webhookUrl').value = config.webhookUrl;
+    document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl;
+    
+    // Save the configuration
+    saveConfig();
+    
+    // Show success message
+    showStatus(`✅ Applied configuration: ${config.name}`, 'success');
+    // Set button to completed status
+setButtonCompleted('applyChatbotBtn', `Applied: ${config.name}`);
+    
+    // Optional: Clear chat if there's an existing conversation
+    if (conversationHistory.length > 0) {
+        const shouldClear = confirm('Apply new chatbot configuration? This will clear the current conversation.');
+        if (shouldClear) {
+            clearChat();
+            addMessage(`Switched to: ${config.name}`, 'system');
+        }
+    } else {
+        addMessage(`Chatbot configured: ${config.name}`, 'system');
+    }
+    
+    console.log('Applied chatbot configuration:', config);
+} 
+
+        // ===== SCENARIO SETS MANAGEMENT =====
+
+// Load scenario sets from Google Sheet with better CORS handling
+async function loadScenarioSets() {
+    const scenarioSetsId = document.getElementById('scenarioSetsId').value;
+    
+    if (!scenarioSetsId) {
+        showStatus('Please enter Scenario Sets Sheet ID first', 'error');
+        return;
+    }
+    
+    // Disable the load button and show loading state
+    const loadBtn = document.getElementById('loadSetsBtn');
+    const originalText = loadBtn.innerHTML;
+    loadBtn.disabled = true;
+    loadBtn.innerHTML = '⏳ Loading...';
+    
+    showStatus('Loading scenario sets...', 'info');
+    
+    try {
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
+        
+        // Try the direct API approach first
+        let url = `https://sheets.googleapis.com/v4/spreadsheets/${scenarioSetsId}/values/Sheet1?key=${apiKey}`;
+        
+        console.log('Attempting to load from:', url);
+        
+        const response = await fetch(url, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+            },
+            mode: 'cors'
+        });
+        
+        if (!response.ok) {
+            // If direct API fails, try alternative approach
+            console.log('Direct API failed, trying alternative approach...');
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.values && data.values.length > 1) {
+            // Process the scenario sets data
+            scenarioSets = [];
+            
+            // Skip header row, process scenario set rows
+            for (let i = 1; i < data.values.length; i++) {
+                const row = data.values[i];
+                if (row.length >= 2 && row[0] && row[1]) {
+                    scenarioSets.push({
+                        name: row[0].trim(),
+                        sheetId: row[1].trim(),
+                        description: row[2] ? row[2].trim() : ''
+                    });
+                }
+            }
+            
+            populateScenarioSetsDropdown();
+showStatus(`Loaded ${scenarioSets.length} scenario sets`, 'success');
+
+// Set button to completed status
+setButtonCompleted('loadSetsBtn', 'Sets Loaded');
+            
+            // Try to restore saved selection
+            const savedConfig = localStorage.getItem('pharmacyChatConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.selectedScenarioSet) {
+                    document.getElementById('scenarioSetSelect').value = config.selectedScenarioSet;
+                    // Auto-apply the saved selection
+                    applyScenarioSet();
+                }
+            }
+            
+        } else {
+            showStatus('No scenario sets data found in the sheet', 'error');
+            loadBtn.disabled = false;
+            loadBtn.innerHTML = '❌ No Data Found';
+        }
+        
+    } catch (error) {
+        console.error('Error loading scenario sets:', error);
+        
+        // More specific error handling
+        if (error.message.includes('Failed to fetch')) {
+            showStatus('CORS error: Please ensure your Google Sheet is publicly accessible (Anyone with link can view)', 'error');
+        } else {
+            showStatus('Error loading scenario sets. Check console for details.', 'error');
+        }
+        
+        // Set button back to pending status on error
+setButtonStatus('loadSetsBtn', 'pending', 'Load Failed - Retry');
+    }
+}
+
+// Populate the scenario sets selection dropdown
+function populateScenarioSetsDropdown() {
+    const select = document.getElementById('scenarioSetSelect');
+    select.innerHTML = '<option value="">Select a scenario set...</option>';
+    select.disabled = false;
+    
+    scenarioSets.forEach((scenarioSet, index) => {
+        const option = document.createElement('option');
+        option.value = index;
+        
+        // Show name and description if available
+        if (scenarioSet.description) {
+            option.textContent = `${scenarioSet.name} - ${scenarioSet.description}`;
+        } else {
+            option.textContent = scenarioSet.name;
+        }
+        
+        select.appendChild(option);
+    });
+    
+    // Add change event listener
+    select.addEventListener('change', function() {
+        if (this.value !== '') {
+            applyScenarioSet();
+        }
+    });
+}
+
+// Apply the selected scenario set
+function applyScenarioSet() {
+    const selectElement = document.getElementById('scenarioSetSelect');
+    const selectedIndex = selectElement.value;
+    
+    if (selectedIndex === '' || !scenarioSets[selectedIndex]) {
+        showStatus('Please select a scenario set first', 'error');
+        return;
+    }
+    
+    const scenarioSet = scenarioSets[selectedIndex];
+    currentScenarioSet = scenarioSet;
+    
+    // Apply the scenario set's sheet ID to the scenario ID field
+    document.getElementById('sheetId').value = scenarioSet.sheetId;
+    
+    // Clear any existing scenario data
+    sheetData = [];
+    document.getElementById('sheetName').innerHTML = '<option value="">Loading sheet names...</option>';
+    document.getElementById('sheetName').disabled = true;
+    document.getElementById('scenarioSelect').innerHTML = '<option value="">Load sheet data first...</option>';
+    document.getElementById('scenarioSelect').disabled = true;
+    
+    // Clear current scenario
+    currentScenario = null;
+    updatePatientImageButton();
+    
+    // Save the configuration
+    saveConfig();
+    
+    // Show success message
+    showStatus(`✅ Applied scenario set: ${scenarioSet.name}`, 'success');
+    
+    // AUTO-LOAD SHEET NAMES
+    console.log('Auto-loading sheet names for scenario set:', scenarioSet.name);
+    loadSheetNames();
+    
+    console.log('Applied scenario set:', scenarioSet);
+}
+
+        
 // ===== EXPORT CONVERSATION FUNCTION =====
         // Export conversation as a downloadable text file
         
@@ -3161,28 +5141,30 @@ document.addEventListener('keydown', function(event) {
         // Handle chat display and messages
         
         function addMessage(text, sender) {
-            const chatContainer = document.getElementById('chatContainer');
-            
-            // Create message element
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}`;
-            messageDiv.innerHTML = text;
-            
-            // Add to container
-            chatContainer.appendChild(messageDiv);
-            
-            // Scroll to bottom
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            
-            // Add to history (excluding loading spinners and system messages for submission)
-            if (!text.includes('spinner') && sender !== 'system') {
-                conversationHistory.push({
-                    sender: sender,
-                    message: text,
-                    timestamp: new Date().toISOString()
-                });
-            }
-        }
+    const chatContainer = document.getElementById('chatContainer');
+    
+    // Create message element
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${sender}`;
+    messageDiv.innerHTML = text;
+    
+    // Add to container
+    chatContainer.appendChild(messageDiv);
+    
+    // CRITICAL FIX: Force scroll to bottom after DOM update
+    setTimeout(() => {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }, 10);
+    
+    // Add to history (excluding loading spinners and system messages for submission)
+    if (!text.includes('spinner') && sender !== 'system') {
+        conversationHistory.push({
+            sender: sender,
+            message: text,
+            timestamp: new Date().toISOString()
+        });
+    }
+}
         
         function removeLastMessage() {
             const chatContainer = document.getElementById('chatContainer');
@@ -3191,6 +5173,14 @@ document.addEventListener('keydown', function(event) {
                 messages[messages.length - 1].remove();
             }
         }
+
+        // ADD THE NEW FUNCTION HERE:
+function forceScrollToBottom() {
+    const chatContainer = document.getElementById('chatContainer');
+    if (chatContainer) {
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+}
         
         function clearChat() {
             // Reset recording state and hide review
@@ -3241,19 +5231,30 @@ document.addEventListener('keydown', function(event) {
 }
         
         function saveConfig() {
-            const config = {
-                webhookUrl: document.getElementById('webhookUrl').value,
-                submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
-                sheetId: document.getElementById('sheetId').value,
-                sheetName: getSelectedSheetName(),
-                didApiKey: document.getElementById('didApiKey').value,
-                sttProvider: currentSttProvider,
-                deepgramApiKey: document.getElementById('deepgramApiKey').value,
-                deepgramModel: document.getElementById('deepgramModel').value,
-                deepgramLanguage: document.getElementById('deepgramLanguage').value
-            };
-            localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
-        }
+    const config = {
+        webhookUrl: document.getElementById('webhookUrl').value,
+        submitWebhookUrl: document.getElementById('submitWebhookUrl').value,
+        sheetId: document.getElementById('sheetId').value,
+        sheetName: getSelectedSheetName(),
+        didApiKey: document.getElementById('didApiKey').value,
+        // Avatar configuration options
+        serviceType: document.getElementById('serviceType').value,
+        sourceUrl: document.getElementById('sourceUrl').value,
+        presenterId: document.getElementById('presenterId').value,
+        chunkSize: document.getElementById('chunkSize').value,
+        streamingMode: document.getElementById('streamingMode').checked,
+        sttProvider: currentSttProvider,
+        deepgramApiKey: document.getElementById('deepgramApiKey').value,
+        deepgramModel: document.getElementById('deepgramModel').value,
+        deepgramLanguage: document.getElementById('deepgramLanguage').value,
+        voiceSelection: document.getElementById('voiceSelection').value, 
+        configSheetId: document.getElementById('configSheetId').value,
+        selectedChatbot: document.getElementById('chatbotSelect').value,
+        scenarioSetsId: document.getElementById('scenarioSetsId').value,
+        selectedScenarioSet: document.getElementById('scenarioSetSelect').value,
+    };
+    localStorage.setItem('pharmacyChatConfig', JSON.stringify(config));
+}
         
         function loadSavedConfig() {
             const saved = localStorage.getItem('pharmacyChatConfig');
@@ -3263,6 +5264,25 @@ document.addEventListener('keydown', function(event) {
                 document.getElementById('submitWebhookUrl').value = config.submitWebhookUrl || '';
                 document.getElementById('sheetId').value = config.sheetId || '';
                 document.getElementById('didApiKey').value = config.didApiKey || '';
+                // Load avatar configuration
+document.getElementById('serviceType').value = config.serviceType || 'talks';
+document.getElementById('sourceUrl').value = config.sourceUrl || '';
+document.getElementById('presenterId').value = config.presenterId || '';
+document.getElementById('chunkSize').value = config.chunkSize || 200;
+document.getElementById('streamingMode').checked = config.streamingMode !== false;
+                // Add these lines to your existing loadSavedConfig function
+document.getElementById('configSheetId').value = config.configSheetId || '';
+document.getElementById('scenarioSetsId').value = config.scenarioSetsId || '';
+
+// Restore saved chatbot selection if configurations are already loaded
+if (config.selectedChatbot && chatbotConfigurations.length > 0) {
+    document.getElementById('chatbotSelect').value = config.selectedChatbot;
+}
+
+// Force update service fields based on saved service type
+setTimeout(() => {
+    updateServiceFields();
+}, 100);
                 
                 // Try to set sheet name in dropdown
                 const sheetNameDropdown = document.getElementById('sheetName');
@@ -3288,6 +5308,10 @@ document.addEventListener('keydown', function(event) {
                 if (config.deepgramLanguage) {
                     document.getElementById('deepgramLanguage').value = config.deepgramLanguage;
                 }
+                // Load voice selection
+if (config.voiceSelection) {
+    document.getElementById('voiceSelection').value = config.voiceSelection;
+}
             }
         }
         // Select a random scenario
@@ -3308,51 +5332,297 @@ document.addEventListener('keydown', function(event) {
             
             showStatus(`Randomly selected: ${sheetData[randomIndex][0]}`, 'success');
         }
+
+        // UPDATE AVATAR CONFIGURATION BASED ON SCENARIO DATA
+        // UPDATE AVATAR CONFIGURATION BASED ON SCENARIO DATA
+function updateAvatarFromScenario() {
+    if (!currentScenario) return;
+    
+    // Check for avatar URL in various possible column names
+    const avatarUrl = currentScenario['Avatar URL'] || 
+                     currentScenario['Talking Head URL'] || 
+                     currentScenario['Avatar Image'] || 
+                     currentScenario['Avatar'] || 
+                     currentScenario['Speaker Image'] ||
+                     currentScenario['D-ID Image URL'] ||
+                     currentScenario['Source URL'];
+    
+    // Check for voice selection in various possible column names
+    const voiceSelection = currentScenario['Voice'] || 
+                          currentScenario['Voice Selection'] || 
+                          currentScenario['Avatar Voice'] || 
+                          currentScenario['TTS Voice'] || 
+                          currentScenario['Voice ID'];
+    
+    let hasChanges = false;
+    
+    // Handle avatar URL
+    if (avatarUrl && avatarUrl.trim() !== '') {
+        console.log('Found avatar URL in scenario:', avatarUrl);
+        
+        // Convert Google Drive URLs if needed
+        const convertedUrl = convertGoogleDriveUrl(avatarUrl.trim());
+        
+        // Set the service type to 'talks' (custom image)
+        document.getElementById('serviceType').value = 'talks';
+        
+        // Set the source URL
+        document.getElementById('sourceUrl').value = convertedUrl;
+        
+        // Update the UI
+        updateServiceFields();
+        
+        hasChanges = true;
+        
+        console.log('Avatar URL set to:', convertedUrl);
+    }
+    
+    // Handle voice selection
+    if (voiceSelection && voiceSelection.trim() !== '') {
+        console.log('Found voice selection in scenario:', voiceSelection);
+        
+        // Validate that the voice exists in the dropdown
+        const voiceDropdown = document.getElementById('voiceSelection');
+        const voiceOptions = Array.from(voiceDropdown.options).map(option => option.value);
+        
+        if (voiceOptions.includes(voiceSelection.trim())) {
+            // Set the voice selection
+            document.getElementById('voiceSelection').value = voiceSelection.trim();
+            hasChanges = true;
+            console.log('Voice selection set to:', voiceSelection.trim());
+        } else {
+            console.warn('Voice not found in dropdown:', voiceSelection.trim());
+            console.log('Available voices:', voiceOptions);
+            showStatus(`Warning: Voice "${voiceSelection.trim()}" not found in voice options`, 'warning');
+        }
+    }
+    
+    // Save configuration if changes were made
+    if (hasChanges) {
+        saveConfig();
+        
+        // Show comprehensive status message
+        let statusParts = [];
+        if (avatarUrl && avatarUrl.trim() !== '') {
+            statusParts.push(`Avatar: ${convertGoogleDriveUrl(avatarUrl.trim()).substring(0, 30)}...`);
+        }
+        if (voiceSelection && voiceSelection.trim() !== '') {
+            statusParts.push(`Voice: ${voiceSelection.trim()}`);
+        }
+        
+        showStatus(`Loaded from scenario - ${statusParts.join(', ')}`, 'success');
+        
+        // If avatar is already initialized, close existing connection to force reconnection with new settings
+        if (isAvatarInitialized && isStreamConnected && avatarUrl && avatarUrl.trim() !== '') {
+            console.log('Reconnecting stream with new avatar settings...');
+            closeStreamConnection();
+            
+            // Auto-reconnect after a short delay
+            setTimeout(() => {
+                connectStream();
+            }, 1000);
+        }
+    } else {
+        console.log('No avatar URL or voice selection found in scenario');
+    }
+}        
+        // ===== COLLAPSIBLE CONFIGURATION PANEL =====
+let isConfigCollapsed = false;
+
+function toggleConfigCollapse() {
+    const configCard = document.getElementById('configCard');
+    const grid = document.querySelector('.grid');
+    const collapseBtn = document.getElementById('configCollapseBtn');
+    
+    isConfigCollapsed = !isConfigCollapsed;
+    
+    if (isConfigCollapsed) {
+        // Collapse the configuration panel
+        configCard.classList.add('collapsed');
+        grid.classList.add('config-collapsed');
+        collapseBtn.innerHTML = '▶';
+        collapseBtn.title = 'Expand Configuration';
+        
+        // Save collapsed state
+        localStorage.setItem('configCollapsed', 'true');
+        
+    } else {
+        // Expand the configuration panel
+        configCard.classList.remove('collapsed');
+        grid.classList.remove('config-collapsed');
+        collapseBtn.innerHTML = '◀';
+        collapseBtn.title = 'Collapse Configuration';
+        
+        // Save expanded state
+        localStorage.setItem('configCollapsed', 'false');
+    }
+    
+    // ADD THIS: Force video repositioning after transition
+    setTimeout(() => {
+        forceVideoReposition();
+    }, 300); // Wait for CSS transition to complete
+}
+
+// Load collapsed state on page load
+function loadCollapsedState() {
+    // Load configuration collapsed state
+    const savedConfigState = localStorage.getItem('configCollapsed');
+    if (savedConfigState === 'true') {
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleConfigCollapse();
+        }, 100);
+    }
+    
+    // Load scenario management collapsed state
+    const savedScenarioState = localStorage.getItem('scenarioCollapsed');
+    if (savedScenarioState === 'true') {
+        // Delay to ensure DOM is ready
+        setTimeout(() => {
+            toggleScenarioCollapse();
+        }, 150);
+    }
+}
+
+        // ===== SCENARIO MANAGEMENT COLLAPSIBLE PANEL =====
+let isScenarioCollapsed = false;
+
+function toggleScenarioCollapse() {
+    const scenarioCard = document.getElementById('scenarioCard');
+    const grid = document.querySelector('.grid');
+    const collapseBtn = document.getElementById('scenarioCollapseBtn');
+    
+    isScenarioCollapsed = !isScenarioCollapsed;
+    
+    if (isScenarioCollapsed) {
+        // Collapse the scenario management panel
+        scenarioCard.classList.add('scenario-collapsed');
+        grid.classList.add('scenario-collapsed');
+        collapseBtn.innerHTML = '▶';
+        collapseBtn.title = 'Expand Scenario Management';
+        
+        // Save collapsed state
+        localStorage.setItem('scenarioCollapsed', 'true');
+        
+    } else {
+        // Expand the scenario management panel
+        scenarioCard.classList.remove('scenario-collapsed');
+        grid.classList.remove('scenario-collapsed');
+        collapseBtn.innerHTML = '◀';
+        collapseBtn.title = 'Collapse Scenario Management';
+        
+        // Save expanded state
+        localStorage.setItem('scenarioCollapsed', 'false');
+    }
+    
+    // ADD THIS: Force video repositioning after transition
+    setTimeout(() => {
+        forceVideoReposition();
+    }, 300); // Wait for CSS transition to complete
+}
+
+        // Force video element to reposition and recalculate
+// Force video element to reposition and recalculate
+function forceVideoReposition() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    const avatarContainer = document.querySelector('.avatar-container');
+    
+    if (avatarVideo && videoWrapper) {
+        console.log('Forcing video reposition...');
+        
+        // Force a reflow by temporarily changing display
+        const originalDisplay = avatarVideo.style.display;
+        avatarVideo.style.display = 'none';
+        
+        // Trigger reflow on multiple elements
+        avatarVideo.offsetHeight;
+        if (videoWrapper) videoWrapper.offsetHeight;
+        if (avatarContainer) avatarContainer.offsetHeight;
+        
+        // Restore display
+        avatarVideo.style.display = originalDisplay || 'block';
+        
+        // Force video container to recalculate dimensions
+        if (videoWrapper) {
+            const wrapperDisplay = videoWrapper.style.display;
+            videoWrapper.style.display = 'none';
+            videoWrapper.offsetHeight;
+            videoWrapper.style.display = wrapperDisplay || 'flex';
+        }
+        
+        // Force video to recalculate its object-fit positioning
+        if (avatarVideo.srcObject || avatarVideo.src) {
+            const currentTime = avatarVideo.currentTime;
+            const wasPaused = avatarVideo.paused;
+            
+            // Only reload if there's actual content
+            if (avatarVideo.readyState > 0) {
+                avatarVideo.load();
+                if (currentTime > 0) {
+                    avatarVideo.currentTime = currentTime;
+                }
+                if (!wasPaused) {
+                    avatarVideo.play().catch(err => console.log('Video play error:', err));
+                }
+            }
+        }
+        
+        console.log('Video repositioning completed');
+    }
+}
+
+// Handle clicks on the scenario management header
+function handleScenarioHeaderClick(event) {
+    const scenarioCard = document.getElementById('scenarioCard');
+    
+    // Only handle clicks when collapsed and not directly on the button
+    if (scenarioCard.classList.contains('scenario-collapsed') && !event.target.classList.contains('collapse-btn')) {
+        toggleScenarioCollapse();
+    }
+}
+
+        // ===== BUTTON STATUS MANAGEMENT =====
+// Functions to manage button status colors
+
+function setButtonStatus(buttonId, status, newText = null) {
+    const button = document.getElementById(buttonId);
+    if (!button) return;
+    
+    // Remove existing status classes
+    button.classList.remove('btn-status-pending', 'btn-status-completed');
+    
+    if (status === 'pending') {
+        button.classList.add('btn-status-pending');
+    } else if (status === 'completed') {
+        button.classList.add('btn-status-completed');
+    }
+    
+    // Update button text if provided
+    if (newText) {
+        button.innerHTML = newText;
+    }
+}
+
+function setButtonCompleted(buttonId, successText = null) {
+    setButtonStatus(buttonId, 'completed', successText);
+}
+
+function setButtonPending(buttonId, pendingText = null) {
+    setButtonStatus(buttonId, 'pending', pendingText);
+}
+
+
+// Handle clicks on the configuration header
+function handleHeaderClick(event) {
+    const configCard = document.getElementById('configCard');
+    
+    // Only handle clicks when collapsed and not directly on the button
+    if (configCard.classList.contains('collapsed') && !event.target.classList.contains('collapse-btn')) {
+        toggleConfigCollapse();
+    }
+}
+        
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
