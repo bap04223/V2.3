@@ -3547,27 +3547,18 @@ function stopKeepAlive() {
 
 async function sendKeepAliveMessage() {
     try {
-        const config = getAvatarConfiguration();
-        
+        // Send a minimal keep-alive payload - just a single space character
         const keepAlivePayload = {
             script: {
                 type: 'text',
-                input: '.', // Minimal text
+                input: ' ',  // Single space - minimal audio output
                 provider: {
                     type: 'microsoft',
-                    voice_id: document.getElementById('voiceSelection').value || 'en-US-AriaNeural'
+                    voice_id: 'en-US-AriaNeural'  // Use simple default voice
                 }
-            },
-            config: {
-                stitch: true,
-                result_format: 'mp4'
             },
             session_id: didSessionId
         };
-        
-        if (config.serviceType === 'talks') {
-            keepAlivePayload.driver_url = 'bank://lively/';
-        }
         
         const response = await fetch(`https://api.d-id.com/${config.serviceType}/streams/${streamId}`, {
             method: 'POST',
@@ -5729,6 +5720,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
