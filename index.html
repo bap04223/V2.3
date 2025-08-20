@@ -1490,17 +1490,7 @@ body {
                 <select id="chatbotSelect" disabled style="font-size: 14px;">
                     <option value="">Load configurations first...</option>
                 </select>
-            </div>
-            
-            <button 
-    class="btn-info btn-status-pending" 
-    onclick="applyChatbotConfiguration()" 
-    style="width: 100%; font-size: 14px;"
-    disabled
-    id="applyChatbotBtn"
->
-    Apply Selected Chatbot
-</button>
+            </div> 
         </div>       
 
 
@@ -4435,18 +4425,10 @@ function populateChatbotDropdown() {
         select.appendChild(option);
     });
     
-    // Enable the apply button when a selection is available
-    document.getElementById('applyChatbotBtn').disabled = false;
-    
-    // Add change event listener
+    // Add change event listener to automatically apply selection
     select.addEventListener('change', function() {
-        const applyBtn = document.getElementById('applyChatbotBtn');
         if (this.value !== '') {
-            applyBtn.disabled = false;
-            applyBtn.textContent = `✅ Apply ${chatbotConfigurations[this.value].name}`;
-        } else {
-            applyBtn.disabled = true;
-            applyBtn.textContent = '✅ Apply Selected Configuration';
+            applyChatbotConfiguration();
         }
     });
 }
@@ -5626,3 +5608,4 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
