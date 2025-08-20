@@ -152,11 +152,10 @@ body {
     max-height: none; /* LOCKED: Let parent control max height */
 }   
         
-        /* Form input styling */
         .form-group {
-            margin-bottom: 15px;
-            flex-shrink: 0;
-        }
+    margin-bottom: 20px; /* Increased from 15px for better spacing */
+    flex-shrink: 0;
+}
 
         .form-group.no-margin {
     margin-bottom: 0;
@@ -1482,26 +1481,21 @@ body {
 </h2>
     <div class="card-content" style="display: flex; flex-direction: column; height: 100%; padding-bottom: 120px; position: relative;">
 
-        <!-- NEW: Chatbot Configuration Section - MOVED TO TOP -->
-        <div class="form-group" style="margin-bottom: 15px;">
-                                   
-          <div class="form-group" style="margin-bottom: 15px;">
-                <label for="chatbotSelect">Select Chatbot:</label>
-                <select id="chatbotSelect" disabled style="font-size: 14px;">
-                    <option value="">Load configurations first...</option>
-                </select>
-            </div> 
-        </div>       
+        <!-- Chatbot Configuration Section -->
+<div class="form-group">
+    <label for="chatbotSelect">Select Chatbot:</label>
+    <select id="chatbotSelect" disabled style="font-size: 14px;">
+        <option value="">Load configurations first...</option>
+    </select>
+</div>       
 
 
         <!-- Scenario Sets Management Section -->
-<div class="form-group" style="margin-bottom: 15px;">  
-    <div class="form-group" style="margin-top: 15px;">
-        <label for="scenarioSetSelect">Select Scenario Set:</label>
-        <select id="scenarioSetSelect" disabled style="font-size: 14px;">
-            <option value="">Load scenario sets first...</option>
-        </select>
-    </div>
+<div class="form-group">
+    <label for="scenarioSetSelect">Select Scenario Set:</label>
+    <select id="scenarioSetSelect" disabled style="font-size: 14px;">
+        <option value="">Load scenario sets first...</option>
+    </select>
 </div>
 
         <!-- Scenario Management Section -->
@@ -1514,26 +1508,28 @@ body {
             </div>
     
     <!-- Scenario selection dropdown -->
-    <div class="form-group">
-        <label for="scenarioSelect">Select Scenario:</label>
-        <select id="scenarioSelect" disabled>
-            <option value="">Load sheet data first...</option>
-        </select>
-    </div>
-    
-    <button class="btn-info" onclick="selectRandomScenario()" style="margin-bottom: 10px; width: 100%;">
+<div class="form-group">
+    <label for="scenarioSelect">Select Scenario:</label>
+    <select id="scenarioSelect" disabled>
+        <option value="">Load sheet data first...</option>
+    </select>
+    <button class="btn-info" onclick="selectRandomScenario()" style="margin-top: 10px; width: 100%;">
         Random Scenario
     </button>
-    
-    <!-- Patient Image Button - MOVED FROM CONFIGURATION -->
+</div>
+
+<!-- Patient Image Button -->
+<div class="form-group">
     <button 
         class="patient-image-btn disabled" 
         id="patientImageBtn"
         onclick="showPatientImage()"
         disabled
+        style="width: 100%;"
     >
         No Scenario Selected
     </button>
+</div>
 </div>
 
 <!-- Avatar Control Section - MOVED FROM CONFIGURATION -->
@@ -5608,6 +5604,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
