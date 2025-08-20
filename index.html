@@ -496,6 +496,59 @@ body {
             margin-right: 8px;
         }
 
+        /* Stream Timer Overlay */
+.stream-timer-overlay {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: bold;
+    z-index: 10;
+    backdrop-filter: blur(4px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: none;
+    min-width: 70px;
+    text-align: center;
+}
+
+.stream-timer-overlay.warning {
+    background: rgba(245, 158, 11, 0.9);
+    color: white;
+    animation: pulse-warning 1s infinite;
+}
+
+.stream-timer-overlay.critical {
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    animation: pulse-critical 0.5s infinite;
+}
+
+.timer-overlay-label {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-bottom: 2px;
+}
+
+.timer-overlay-display {
+    font-size: 16px;
+    font-weight: bold;
+}
+
+@keyframes pulse-warning {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.6; }
+}
+
+@keyframes pulse-critical {
+    0%, 100% { opacity: 0.9; }
+    50% { opacity: 0.4; }
+}
+
         /* Scrollable sections within cards */
         .scrollable-section {
             flex: 1;
@@ -1580,7 +1633,7 @@ body {
                 <div class="card-content">
                     <!-- D-ID Avatar Video Container -->
 <div class="avatar-container" id="avatarContainer">
-    <div class="video-wrapper">
+    <div class="video-wrapper" style="position: relative;">
        <video 
     id="avatarVideo" 
     width="100%" 
@@ -1599,6 +1652,10 @@ margin: 0 auto;
 "
 >
 </video>
+       <div id="streamTimerOverlay" class="stream-timer-overlay">
+           <div class="timer-overlay-label">Stream</div>
+           <div class="timer-overlay-display" id="timerOverlayDisplay">1:45</div>
+       </div>
     </div>
     <div id="avatarStatus" class="avatar-status">
     </div>
@@ -1660,6 +1717,8 @@ margin: 0 auto;
 
 <!-- JavaScript code for functionality -->
     <script>
+
+        
         // ===== GLOBAL VARIABLES =====
         // These store the state of our application
         
@@ -1713,6 +1772,11 @@ let forceStopRecognition = false; // Flag to force stop recognition
         let deepgramSocket = null; // WebSocket connection to Deepgram
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
+
+        // Stream timeout timer variables
+let streamTimer = null;
+let timeRemaining = 105; // 1 minute 45 seconds
+const STREAM_TIMEOUT = 105; // 1:45 in seconds
 
         // ===== PRESENTER GENDER DATABASE =====
 // Database of presenter genders and characteristics for voice matching
@@ -2897,9 +2961,10 @@ async function connectStream() {
        console.log('SDP answer sent successfully');
         updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
         
-        // START KEEP-ALIVE
+        // START KEEP-ALIVE AND TIMER
         startKeepAlive();
         updateActivityTime();
+        startStreamTimer();
         
     } catch (error) {
         console.error('Stream connection error:', error);
@@ -3079,8 +3144,9 @@ function setVideoElement(stream) {
 async function closeStreamConnection() {
     console.log('=== closeStreamConnection() called ===');
     
-    // STOP KEEP-ALIVE
+    // STOP KEEP-ALIVE AND TIMER
     stopKeepAlive();
+    stopStreamTimer();
     
     // Get current service type BEFORE clearing variables
     const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
@@ -3290,8 +3356,11 @@ console.log('Final voice configuration:', voiceConfig);
             throw new Error(`Talk stream failed: ${talkResponse.status} - ${errorText}`);
         }
 
-        console.log('Talk stream sent successfully');
+       console.log('Talk stream sent successfully');
         updateAvatarStatus('Speaking...', 'playing');
+        
+        // Reset stream timer when avatar responds
+        resetStreamTimer();
 
         // The video will automatically appear via the WebRTC stream
         // Monitor for video events to update status
@@ -3508,109 +3577,132 @@ async function getPresenterDrivers(presenterId) {
             }
         }
 
-        // Keep-alive mechanism functions
-function startKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-    }
+        // Stream timer functions
+function startStreamTimer() {
+    stopStreamTimer(); // Clear any existing timer
+    timeRemaining = STREAM_TIMEOUT;
     
-    keepAliveInterval = setInterval(() => {
-        if (!isStreamConnected || !streamId || !didSessionId) {
-            console.log('Stream not connected, stopping keep-alive');
-            stopKeepAlive();
-            return;
-        }
-        
-        const timeSinceActivity = Date.now() - lastActivityTime;
-        
-        if (timeSinceActivity > MAX_IDLE_TIME) {
-            console.log('Stream idle too long, stopping keep-alive');
-            stopKeepAlive();
-            updateAvatarStatus('Stream idle - will reconnect when needed', 'info');
-            return;
-        }
-        
-        sendKeepAliveMessage();
-        
-    }, KEEP_ALIVE_INTERVAL);
+    const timerElement = document.getElementById('streamTimerOverlay');
+    const displayElement = document.getElementById('timerOverlayDisplay');
     
-    console.log('Keep-alive started');
-}
-
-function stopKeepAlive() {
-    if (keepAliveInterval) {
-        clearInterval(keepAliveInterval);
-        keepAliveInterval = null;
-        console.log('Keep-alive stopped');
+    if (timerElement && displayElement) {
+        timerElement.style.display = 'block';
+        updateTimerDisplay();
+        
+        streamTimer = setInterval(() => {
+            timeRemaining--;
+            updateTimerDisplay();
+            
+            if (timeRemaining <= 0) {
+                onStreamTimeout();
+            }
+        }, 1000);
+        
+        console.log('Stream timer started: 1:45 countdown');
     }
 }
 
-async function sendKeepAliveMessage() {
+function stopStreamTimer() {
+    if (streamTimer) {
+        clearInterval(streamTimer);
+        streamTimer = null;
+    }
+    
+    const timerElement = document.getElementById('streamTimerOverlay');
+    if (timerElement) {
+        timerElement.style.display = 'none';
+    }
+    
+    console.log('Stream timer stopped');
+}
+
+function resetStreamTimer() {
+    if (isStreamConnected && streamTimer) {
+        timeRemaining = STREAM_TIMEOUT;
+        updateTimerDisplay();
+        console.log('Stream timer reset to 1:45');
+    }
+}
+
+function updateTimerDisplay() {
+    const displayElement = document.getElementById('timerOverlayDisplay');
+    const timerElement = document.getElementById('streamTimerOverlay');
+    if (!displayElement || !timerElement) return;
+    
+    const minutes = Math.floor(timeRemaining / 60);
+    const seconds = timeRemaining % 60;
+    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    displayElement.textContent = timeString;
+    
+    // Remove existing classes
+    timerElement.classList.remove('warning', 'critical');
+    
+    // Add warning/critical classes based on time remaining
+    if (timeRemaining <= 10) {
+        timerElement.classList.add('critical');
+    } else if (timeRemaining <= 30) {
+        timerElement.classList.add('warning');
+    }
+}
+
+function onStreamTimeout() {
+    stopStreamTimer();
+    console.log('Stream timer expired - connection may be lost');
+    updateAvatarStatus('Stream timeout - connection may be lost', 'error');
+    
+    // Auto-reconnect after timeout
+    if (isAvatarInitialized) {
+        setTimeout(() => {
+            updateAvatarStatus('Auto-reconnecting after timeout...', 'loading');
+            connectStream().catch(error => {
+                updateAvatarStatus('Reconnection failed', 'error');
+            });
+        }, 2000);
+    }
+}
+   async function sendKeepAliveMessage() {
     try {
-        // Send a minimal keep-alive payload - just a single space character
-        const keepAlivePayload = {
-            script: {
-                type: 'text',
-                input: ' ',  // Single space - minimal audio output
-                provider: {
-                    type: 'microsoft',
-                    voice_id: 'en-US-AriaNeural'  // Use simple default voice
-                }
-            },
-            session_id: didSessionId
-        };
-        
-        // Get current service type for the correct endpoint
-        const currentServiceType = document.getElementById('serviceType').value;
-        
-        const response = await fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Basic ${didApiKey}`,
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(keepAlivePayload),
-        });
-        
-        if (response.ok) {
-            console.log('Keep-alive message sent successfully');
+        // Instead of sending API calls, just monitor the WebRTC connection health
+        if (peerConnection && peerConnection.connectionState === 'connected') {
+            console.log('Keep-alive: WebRTC connection still active');
             lastActivityTime = Date.now();
+            
+            // Optional: Get connection stats to verify health
+            if (peerConnection.getStats) {
+                const stats = await peerConnection.getStats();
+                let hasActiveConnection = false;
+                
+                stats.forEach(report => {
+                    if (report.type === 'candidate-pair' && report.state === 'succeeded') {
+                        hasActiveConnection = true;
+                    }
+                });
+                
+                if (hasActiveConnection) {
+                    console.log('Keep-alive: WebRTC stats confirm healthy connection');
+                } else {
+                    console.warn('Keep-alive: WebRTC connection may be degrading');
+                }
+            }
+            
         } else {
-            console.warn('Keep-alive failed:', response.status);
+            console.warn('Keep-alive: WebRTC connection not healthy, state:', peerConnection?.connectionState);
+            
+            // If connection is lost, stop the keep-alive and timer
+            if (peerConnection?.connectionState === 'failed' || peerConnection?.connectionState === 'disconnected') {
+                console.log('Keep-alive: Connection failed, stopping keep-alive and timer');
+                stopKeepAlive();
+                stopStreamTimer();
+                updateAvatarStatus('Connection lost - stream may need reconnection', 'error');
+            }
         }
         
     } catch (error) {
-        console.error('Keep-alive error:', error);
+        console.error('Keep-alive monitoring error:', error);
     }
-}
-
-function updateActivityTime() {
-    lastActivityTime = Date.now();
-}
-
-// Connection recovery function
-async function ensureStreamConnection() {
-    if (!isAvatarInitialized) {
-        return false;
-    }
-    
-    if (!isStreamConnected || !streamId || !didSessionId) {
-        console.log('Stream not connected, attempting to reconnect...');
-        updateAvatarStatus('Reconnecting stream...', 'loading');
+}     
         
-        try {
-            await connectStream();
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            return isStreamConnected;
-        } catch (error) {
-            console.error('Reconnection failed:', error);
-            return false;
-        }
-    }
-    
-    return true;
-}
-
 // ===== PRESENTER VERIFICATION AND API TESTING =====
 // INSERT THE NEW FUNCTIONS HERE
 
@@ -5723,6 +5815,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
