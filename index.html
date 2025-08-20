@@ -3560,7 +3560,10 @@ async function sendKeepAliveMessage() {
             session_id: didSessionId
         };
         
-        const response = await fetch(`https://api.d-id.com/${config.serviceType}/streams/${streamId}`, {
+        // Get current service type for the correct endpoint
+        const currentServiceType = document.getElementById('serviceType').value;
+        
+        const response = await fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Basic ${didApiKey}`,
@@ -5720,6 +5723,7 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
+
 
 
 
