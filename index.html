@@ -2633,35 +2633,35 @@ function selectVoiceMethod(method) {
         }
 
         function stopDeepgramRecording() {
-            console.log('Stopping Deepgram recording...');
-            
-            // Stop media recorder
-            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-                mediaRecorder.stop();
-                mediaRecorder = null;
-            }
-            
-            // Stop audio stream
-            if (audioStream) {
-                audioStream.getTracks().forEach(track => track.stop());
-                audioStream = null;
-            }
-            
-            // Close WebSocket after a small delay to ensure final transcripts are received
-            setTimeout(() => {
-                if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
-                    deepgramSocket.close();
-                    deepgramSocket = null;
-                }
-                
-                // Process final transcript - DO NOT auto-send, let the review process handle it
-                if (fullTranscript.trim()) {
-                    console.log('Deepgram transcript ready for review:', fullTranscript);
-                    // The timeout in stopRecording() will call showReviewSection()
-                    // Do NOT call addMessage or sendToWebhook here
-                }
-            }, 500);
+    console.log('Stopping Deepgram recording...');
+    
+    // Stop media recorder
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder = null;
+    }
+    
+    // Stop audio stream
+    if (audioStream) {
+        audioStream.getTracks().forEach(track => track.stop());
+        audioStream = null;
+    }
+    
+    // Close WebSocket after a small delay to ensure final transcripts are received
+    setTimeout(() => {
+        if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
+            deepgramSocket.close();
+            deepgramSocket = null;
         }
+        
+        // Process final transcript - DO NOT auto-send, let the review process handle it
+        if (fullTranscript.trim()) {
+            console.log('Deepgram transcript ready for review:', fullTranscript);
+            // The timeout in stopRecording() will call showReviewSection()
+            // Do NOT call addMessage or sendToWebhook here
+        }
+    }, 500);
+}
         
                 // ===== REVIEW SECTION FUNCTIONS =====
         function showReviewSection(transcript) {
@@ -5806,6 +5806,7 @@ function onTimerExpired() {
     </script>
 </body>
 </html>
+
 
 
 
