@@ -501,70 +501,6 @@ body {
             flex: 1;
             overflow-y: auto;
         }
-
-        /* Timer Styles */
-.timer-container {
-    margin-top: 15px;
-    padding: 15px;
-    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
-    border-radius: 8px;
-    border: 2px solid var(--primary-color);
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.timer-display {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-}
-
-.timer-label {
-    font-size: 14px;
-    color: var(--text-secondary);
-    font-weight: 500;
-}
-
-.timer-countdown {
-    font-size: 24px;
-    font-weight: bold;
-    color: var(--primary-color);
-    font-family: 'Courier New', monospace;
-    min-width: 60px;
-}
-
-.timer-countdown.warning {
-    color: var(--warning-color);
-}
-
-.timer-countdown.critical {
-    color: var(--danger-color);
-    animation: pulse-timer 1s infinite;
-}
-
-.timer-progress {
-    width: 100%;
-    height: 8px;
-    background-color: #e2e8f0;
-    border-radius: 4px;
-    overflow: hidden;
-}
-
-.timer-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--success-color) 0%, var(--warning-color) 70%, var(--danger-color) 100%);
-    border-radius: 4px;
-    transition: width 0.1s linear;
-    width: 100%;
-}
-
-@keyframes pulse-timer {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
         
         /* Patient Image Button Styling */
         .patient-image-btn {
@@ -1665,16 +1601,6 @@ margin: 0 auto;
 </video>
     </div>
     <div id="avatarStatus" class="avatar-status">
-        <!-- Timer Display -->
-<div id="timerContainer" class="timer-container" style="display: none;">
-    <div class="timer-display">
-        <span class="timer-label">Response Time:</span>
-        <span id="timerDisplay" class="timer-countdown">1:45</span>
-    </div>
-    <div class="timer-progress">
-        <div id="timerProgressBar" class="timer-progress-fill"></div>
-    </div>
-</div>
     </div>
 </div></div>
 
@@ -1781,14 +1707,6 @@ let forceStopRecognition = false; // Flag to force stop recognition
         let deepgramSocket = null; // WebSocket connection to Deepgram
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
-
-        // ===== TIMER VARIABLES =====
-let responseTimer = null;        // Timer interval
-let timerStartTime = null;       // When timer started
-let timerDuration = 105;         // 1 minute 45 seconds
-let remainingTime = timerDuration; // Remaining seconds
-let timerIsActive = false;       // Track if timer is running
-let hasReceivedFirstResponse = false; // Track if first response received
 
         // ===== PRESENTER GENDER DATABASE =====
 // Database of presenter genders and characteristics for voice matching
@@ -2012,12 +1930,6 @@ setButtonStatus('initializeAvatarBtn', 'pending', 'Initialize & Connect Avatar')
     } else {
         addMessage('New session started. Select a scenario, initialize avatar, and start recording to begin.', 'ai');
     }
-    
-    // RESET TIMER STATE FOR NEW SESSION
-    stopResponseTimer();
-    hideResponseTimer();
-    hasReceivedFirstResponse = false;
-    remainingTime = timerDuration;
     
     console.log('=== newSession() completed ===');
     console.log('New session created:', sessionId);
@@ -3390,20 +3302,6 @@ console.log('Final voice configuration:', voiceConfig);
         setTimeout(() => {
             updateAvatarStatus('Avatar ready', 'info');
         }, 3000);
-    }
-    
-    // START/RESET TIMER AFTER AVATAR STARTS SPEAKING
-    if (!hasReceivedFirstResponse) {
-        hasReceivedFirstResponse = true;
-        console.log('First D-ID response received - starting timer');
-        setTimeout(() => {
-            startResponseTimer();
-        }, 2000); // Small delay to ensure avatar is speaking
-    } else {
-        console.log('Subsequent D-ID response - resetting timer');
-        setTimeout(() => {
-            resetResponseTimer();
-        }, 2000); // Small delay to ensure avatar is speaking
     }
 }
 
@@ -5262,28 +5160,23 @@ function forceScrollToBottom() {
     }
 }
         
-     function clearChat() {
-    // Stop and hide timer when chat is cleared
-    stopResponseTimer();
-    hideResponseTimer();
-    hasReceivedFirstResponse = false;
+        function clearChat() {
+            // Reset recording state and hide review
+            recordingState = 'stopped';
+            pendingTranscript = '';
+            hideReviewSection();
     
-    // Reset recording state and hide review
-    recordingState = 'stopped';
-    pendingTranscript = '';
-    hideReviewSection();
-
-    document.getElementById('chatContainer').innerHTML = '';
-    conversationHistory = [];
-    
-    // Reset patient image button if no scenario is selected
-    if (!currentScenario) {
-        const button = document.getElementById('patientImageBtn');
-        button.className = 'patient-image-btn disabled';
-        button.textContent = '📷 No Scenario Selected';
-        button.disabled = true;
-    }
-}
+            document.getElementById('chatContainer').innerHTML = '';
+            conversationHistory = [];
+            
+            // Reset patient image button if no scenario is selected
+            if (!currentScenario) {
+                const button = document.getElementById('patientImageBtn');
+                button.className = 'patient-image-btn disabled';
+                button.textContent = '📷 No Scenario Selected';
+                button.disabled = true;
+            }
+        }
         
         // ===== UTILITY FUNCTIONS =====
         // Helper functions
@@ -5707,133 +5600,10 @@ function handleHeaderClick(event) {
         toggleConfigCollapse();
     }
 }
-     // ===== TIMER FUNCTIONS =====
-function startResponseTimer() {
-    console.log('Starting response timer...');
-    
-    // Stop any existing timer
-    stopResponseTimer();
-    
-    // Reset timer values
-    remainingTime = timerDuration;
-    timerStartTime = Date.now();
-    timerIsActive = true;
-    
-    // Show timer container
-    const timerContainer = document.getElementById('timerContainer');
-    if (timerContainer) {
-        timerContainer.style.display = 'block';
-    }
-    
-    // Update display immediately
-    updateTimerDisplay();
-    
-    // Start countdown interval
-    responseTimer = setInterval(() => {
-        remainingTime--;
-        updateTimerDisplay();
         
-        if (remainingTime <= 0) {
-            stopResponseTimer();
-            onTimerExpired();
-        }
-    }, 1000);
-    
-    console.log('Response timer started - 1:45 countdown');
-}
-
-function stopResponseTimer() {
-    if (responseTimer) {
-        clearInterval(responseTimer);
-        responseTimer = null;
-    }
-    timerIsActive = false;
-    console.log('Response timer stopped');
-}
-
-function resetResponseTimer() {
-    console.log('Resetting response timer...');
-    if (hasReceivedFirstResponse) {
-        startResponseTimer();
-    }
-}
-
-function hideResponseTimer() {
-    const timerContainer = document.getElementById('timerContainer');
-    if (timerContainer) {
-        timerContainer.style.display = 'none';
-    }
-    stopResponseTimer();
-}
-
-function updateTimerDisplay() {
-    const timerDisplay = document.getElementById('timerDisplay');
-    const progressBar = document.getElementById('timerProgressBar');
-    
-    if (!timerDisplay || !progressBar) return;
-    
-    // Format time as MM:SS
-    const minutes = Math.floor(remainingTime / 60);
-    const seconds = remainingTime % 60;
-    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-    
-    // Update display
-    timerDisplay.textContent = timeString;
-    
-    // Update progress bar (inverse - starts full, empties as time runs out)
-    const progressPercent = (remainingTime / timerDuration) * 100;
-    progressBar.style.width = `${progressPercent}%`;
-    
-    // Update styling based on remaining time
-    timerDisplay.classList.remove('warning', 'critical');
-    
-    if (remainingTime <= 15) {
-        // Critical: last 15 seconds
-        timerDisplay.classList.add('critical');
-    } else if (remainingTime <= 30) {
-        // Warning: last 30 seconds
-        timerDisplay.classList.add('warning');
-    }
-}
-
-function onTimerExpired() {
-    console.log('Response timer expired!');
-    
-    // Flash the timer
-    const timerDisplay = document.getElementById('timerDisplay');
-    if (timerDisplay) {
-        timerDisplay.textContent = '0:00';
-        timerDisplay.classList.add('critical');
-    }
-    
-    // Show status message
-    showStatus('⏰ Response time expired - Consider providing a prompt or moving forward', 'warning');
-    
-    // Add system message to chat
-    addMessage('⏰ Response timer expired (1:45) - Patient may need a prompt to continue', 'system');
-}   
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
