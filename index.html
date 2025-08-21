@@ -1665,8 +1665,7 @@ margin: 0 auto;
 </video>
     </div>
     <div id="avatarStatus" class="avatar-status">
-</div>
-<!-- Timer Display - MOVED OUTSIDE avatarStatus -->
+        <!-- Timer Display -->
 <div id="timerContainer" class="timer-container" style="display: none;">
     <div class="timer-display">
         <span class="timer-label">Response Time:</span>
@@ -1676,6 +1675,7 @@ margin: 0 auto;
         <div id="timerProgressBar" class="timer-progress-fill"></div>
     </div>
 </div>
+    </div>
 </div></div>
 
 <!-- Review section for transcript before sending -->
@@ -2633,35 +2633,35 @@ function selectVoiceMethod(method) {
         }
 
         function stopDeepgramRecording() {
-    console.log('Stopping Deepgram recording...');
-    
-    // Stop media recorder
-    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-        mediaRecorder.stop();
-        mediaRecorder = null;
-    }
-    
-    // Stop audio stream
-    if (audioStream) {
-        audioStream.getTracks().forEach(track => track.stop());
-        audioStream = null;
-    }
-    
-    // Close WebSocket after a small delay to ensure final transcripts are received
-    setTimeout(() => {
-        if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
-            deepgramSocket.close();
-            deepgramSocket = null;
+            console.log('Stopping Deepgram recording...');
+            
+            // Stop media recorder
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                mediaRecorder = null;
+            }
+            
+            // Stop audio stream
+            if (audioStream) {
+                audioStream.getTracks().forEach(track => track.stop());
+                audioStream = null;
+            }
+            
+            // Close WebSocket after a small delay to ensure final transcripts are received
+            setTimeout(() => {
+                if (deepgramSocket && deepgramSocket.readyState === WebSocket.OPEN) {
+                    deepgramSocket.close();
+                    deepgramSocket = null;
+                }
+                
+                // Process final transcript - DO NOT auto-send, let the review process handle it
+                if (fullTranscript.trim()) {
+                    console.log('Deepgram transcript ready for review:', fullTranscript);
+                    // The timeout in stopRecording() will call showReviewSection()
+                    // Do NOT call addMessage or sendToWebhook here
+                }
+            }, 500);
         }
-        
-        // Process final transcript - DO NOT auto-send, let the review process handle it
-        if (fullTranscript.trim()) {
-            console.log('Deepgram transcript ready for review:', fullTranscript);
-            // The timeout in stopRecording() will call showReviewSection()
-            // Do NOT call addMessage or sendToWebhook here
-        }
-    }, 500);
-}
         
                 // ===== REVIEW SECTION FUNCTIONS =====
         function showReviewSection(transcript) {
@@ -3586,13 +3586,22 @@ async function getPresenterDrivers(presenterId) {
         }
 
         // Update avatar status display
-function updateAvatarStatus(message, type = 'info') {
-    const statusElement = document.getElementById('avatarStatus');
-    if (statusElement) {
-        statusElement.textContent = message;
-        statusElement.className = `avatar-status ${type}`;
-    }
-}
+        function updateAvatarStatus(message, type = 'info') {
+            const statusElement = document.getElementById('avatarStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `avatar-status ${type}`;
+            }
+        }
+
+        // Update avatar status display
+        function updateAvatarStatus(message, type = 'info') {
+            const statusElement = document.getElementById('avatarStatus');
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `avatar-status ${type}`;
+            }
+        }
 
 // ===== PRESENTER VERIFICATION AND API TESTING =====
 // INSERT THE NEW FUNCTIONS HERE
@@ -5806,6 +5815,21 @@ function onTimerExpired() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
