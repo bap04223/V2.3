@@ -1668,6 +1668,12 @@ margin: 0 auto;
         let sheetData = [];              // Store data loaded from Google Sheets
         let sessionId = '';              // Unique session identifier for this training session
         let currentVoiceMethod = 'text'; // Add this line
+
+        // Keep-alive mechanism variables
+let keepAliveInterval = null;
+let lastActivityTime = Date.now();
+const KEEP_ALIVE_INTERVAL = 30000; // 30 seconds
+const MAX_IDLE_TIME = 300000; // 5 minutes before giving up
         
         // ===== CHATBOT CONFIGURATION VARIABLES =====
 let chatbotConfigurations = [];     // Store loaded chatbot configurations
@@ -2888,8 +2894,12 @@ async function connectStream() {
             throw new Error(`Failed to send SDP answer: ${sdpResponse.status} - ${errorText}`);
         }
         
-        console.log('SDP answer sent successfully');
+       console.log('SDP answer sent successfully');
         updateAvatarStatus(`${config.serviceType.toUpperCase()} stream connected - Ready for speech`, 'success');
+        
+        // START KEEP-ALIVE
+        startKeepAlive();
+        updateActivityTime();
         
     } catch (error) {
         console.error('Stream connection error:', error);
@@ -3069,6 +3079,9 @@ function setVideoElement(stream) {
 async function closeStreamConnection() {
     console.log('=== closeStreamConnection() called ===');
     
+    // STOP KEEP-ALIVE
+    stopKeepAlive();
+    
     // Get current service type BEFORE clearing variables
     const currentServiceType = document.getElementById('serviceType')?.value || 'talks';
     console.log('Closing stream connection for service type:', currentServiceType);
@@ -3175,6 +3188,9 @@ async function speakWithAvatar(text) {
         console.log('Avatar not initialized, skipping speech');
         return;
     }
+    
+    // UPDATE ACTIVITY TIME
+    updateActivityTime();
     
     if (!isStreamConnected || !streamId || !didSessionId) {
         console.log('Stream not connected, attempting to connect...');
@@ -3483,7 +3499,7 @@ async function getPresenterDrivers(presenterId) {
             }
         }
 
-        // Update avatar status display
+               // Update avatar status display
         function updateAvatarStatus(message, type = 'info') {
             const statusElement = document.getElementById('avatarStatus');
             if (statusElement) {
@@ -3492,14 +3508,108 @@ async function getPresenterDrivers(presenterId) {
             }
         }
 
-        // Update avatar status display
-        function updateAvatarStatus(message, type = 'info') {
-            const statusElement = document.getElementById('avatarStatus');
-            if (statusElement) {
-                statusElement.textContent = message;
-                statusElement.className = `avatar-status ${type}`;
-            }
+        // Keep-alive mechanism functions
+function startKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+    }
+    
+    keepAliveInterval = setInterval(() => {
+        if (!isStreamConnected || !streamId || !didSessionId) {
+            console.log('Stream not connected, stopping keep-alive');
+            stopKeepAlive();
+            return;
         }
+        
+        const timeSinceActivity = Date.now() - lastActivityTime;
+        
+        if (timeSinceActivity > MAX_IDLE_TIME) {
+            console.log('Stream idle too long, stopping keep-alive');
+            stopKeepAlive();
+            updateAvatarStatus('Stream idle - will reconnect when needed', 'info');
+            return;
+        }
+        
+        sendKeepAliveMessage();
+        
+    }, KEEP_ALIVE_INTERVAL);
+    
+    console.log('Keep-alive started');
+}
+
+function stopKeepAlive() {
+    if (keepAliveInterval) {
+        clearInterval(keepAliveInterval);
+        keepAliveInterval = null;
+        console.log('Keep-alive stopped');
+    }
+}
+
+async function sendKeepAliveMessage() {
+    try {
+        // Send a minimal keep-alive payload - just a single space character
+        const keepAlivePayload = {
+            script: {
+                type: 'text',
+                input: ' ',  // Single space - minimal audio output
+                provider: {
+                    type: 'microsoft',
+                    voice_id: 'en-US-AriaNeural'  // Use simple default voice
+                }
+            },
+            session_id: didSessionId
+        };
+        
+        // Get current service type for the correct endpoint
+        const currentServiceType = document.getElementById('serviceType').value;
+        
+        const response = await fetch(`https://api.d-id.com/${currentServiceType}/streams/${streamId}`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${didApiKey}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(keepAlivePayload),
+        });
+        
+        if (response.ok) {
+            console.log('Keep-alive message sent successfully');
+            lastActivityTime = Date.now();
+        } else {
+            console.warn('Keep-alive failed:', response.status);
+        }
+        
+    } catch (error) {
+        console.error('Keep-alive error:', error);
+    }
+}
+
+function updateActivityTime() {
+    lastActivityTime = Date.now();
+}
+
+// Connection recovery function
+async function ensureStreamConnection() {
+    if (!isAvatarInitialized) {
+        return false;
+    }
+    
+    if (!isStreamConnected || !streamId || !didSessionId) {
+        console.log('Stream not connected, attempting to reconnect...');
+        updateAvatarStatus('Reconnecting stream...', 'loading');
+        
+        try {
+            await connectStream();
+            await new Promise(resolve => setTimeout(resolve, 2000));
+            return isStreamConnected;
+        } catch (error) {
+            console.error('Reconnection failed:', error);
+            return false;
+        }
+    }
+    
+    return true;
+}
 
 // ===== PRESENTER VERIFICATION AND API TESTING =====
 // INSERT THE NEW FUNCTIONS HERE
@@ -4895,10 +5005,19 @@ function applyScenarioSet() {
                 if (aiResponse) {
                     addMessage(aiResponse, 'ai');
                     
-                    // Generate avatar speech if initialized
+                 // Generate avatar speech if initialized with automatic reconnection
                     if (isAvatarInitialized) {
                         console.log('Triggering avatar speech for response');
-                        speakWithAvatar(aiResponse);
+                        
+                        // Ensure connection before speaking
+                        ensureStreamConnection().then(connected => {
+                            if (connected) {
+                                speakWithAvatar(aiResponse);
+                            } else {
+                                console.warn('Could not establish stream connection for speech');
+                                updateAvatarStatus('Connection lost - click Initialize Avatar', 'error');
+                            }
+                        });
                     }
                 } else {
                     console.error('Could not find response in data:', data);
@@ -5604,12 +5723,6 @@ function handleHeaderClick(event) {
     </script>
 </body>
 </html>
-
-
-
-
-
-
 
 
 
