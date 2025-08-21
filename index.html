@@ -1665,7 +1665,8 @@ margin: 0 auto;
 </video>
     </div>
     <div id="avatarStatus" class="avatar-status">
-        <!-- Timer Display -->
+</div>
+<!-- Timer Display - MOVED OUTSIDE avatarStatus -->
 <div id="timerContainer" class="timer-container" style="display: none;">
     <div class="timer-display">
         <span class="timer-label">Response Time:</span>
@@ -1675,7 +1676,6 @@ margin: 0 auto;
         <div id="timerProgressBar" class="timer-progress-fill"></div>
     </div>
 </div>
-    </div>
 </div></div>
 
 <!-- Review section for transcript before sending -->
@@ -3586,22 +3586,13 @@ async function getPresenterDrivers(presenterId) {
         }
 
         // Update avatar status display
-        function updateAvatarStatus(message, type = 'info') {
-            const statusElement = document.getElementById('avatarStatus');
-            if (statusElement) {
-                statusElement.textContent = message;
-                statusElement.className = `avatar-status ${type}`;
-            }
-        }
-
-        // Update avatar status display
-        function updateAvatarStatus(message, type = 'info') {
-            const statusElement = document.getElementById('avatarStatus');
-            if (statusElement) {
-                statusElement.textContent = message;
-                statusElement.className = `avatar-status ${type}`;
-            }
-        }
+function updateAvatarStatus(message, type = 'info') {
+    const statusElement = document.getElementById('avatarStatus');
+    if (statusElement) {
+        statusElement.textContent = message;
+        statusElement.className = `avatar-status ${type}`;
+    }
+}
 
 // ===== PRESENTER VERIFICATION AND API TESTING =====
 // INSERT THE NEW FUNCTIONS HERE
@@ -5815,6 +5806,7 @@ function onTimerExpired() {
     </script>
 </body>
 </html>
+
 
 
 
