@@ -564,18 +564,17 @@ body {
     }
 }
         
-        /* Image Modal Styling */
         .image-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            animation: fadeIn 0.3s ease-in-out;
-        }
+    display: none;
+    position: fixed;
+    z-index: 9999999;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    animation: fadeIn 0.3s ease-in-out;
+}
         
         .image-modal.show {
             display: flex;
@@ -768,6 +767,50 @@ body {
         width: 10px;
         height: 10px;
     }
+}
+
+        /* Mobile Responsive Gallery */
+@media (max-width: 768px) {
+    .gallery-nav {
+        padding: 8px 12px;
+        font-size: 14px;
+    }
+    
+    .gallery-nav-prev {
+        left: 5px;
+    }
+    
+    .gallery-nav-next {
+        right: 5px;
+    }
+    
+    .gallery-dot {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* Fullscreen modal - append to fullscreen element instead of fighting it */
+.fullscreen-image-modal {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: rgba(0, 0, 0, 0.9) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 999 !important;
+}
+
+.fullscreen-image-modal .image-modal-content {
+    max-width: 95% !important;
+    max-height: 95% !important;
+    background: white !important;
+    border-radius: 12px !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5) !important;
+    overflow: hidden !important;
 }
             
       /* Review section styling */
@@ -1195,6 +1238,75 @@ body {
     }
 }
 
+    /* Fullscreen-specific timer animation without translateX */
+@keyframes timerCriticalFullscreen {
+    0%, 100% { 
+        transform: scale(1); 
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3); 
+    }
+    50% { 
+        transform: scale(1.1); 
+        box-shadow: 0 6px 25px rgba(239, 68, 68, 0.8); 
+    }
+}
+
+/* Force fullscreen animation to override all other styles */
+.video-fullscreen-active .timer-overlay.critical {
+    animation: timerCriticalFullscreen 0.8s infinite ease-in-out !important;
+    animation-fill-mode: both !important;
+}
+
+    /* Force timer animations in fullscreen */
+.video-fullscreen-active .timer-overlay.warning,
+:fullscreen .video-fullscreen-active .timer-overlay.warning,
+:-webkit-full-screen .video-fullscreen-active .timer-overlay.warning,
+:-moz-full-screen .video-fullscreen-active .timer-overlay.warning {
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    border-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.video-fullscreen-active .timer-overlay.critical,
+:fullscreen .video-fullscreen-active .timer-overlay.critical,
+:-webkit-full-screen .video-fullscreen-active .timer-overlay.critical,
+:-moz-full-screen .video-fullscreen-active .timer-overlay.critical {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border-color: rgba(255, 255, 255, 0.4) !important;
+    animation: timerCritical 0.8s infinite ease-in-out !important;
+}
+
+/* Ensure animation keyframes work in fullscreen */
+:fullscreen .video-fullscreen-active .timer-overlay.critical {
+    animation: timerCritical 0.8s infinite ease-in-out !important;
+}    
+
+        /* Ensure animation keyframes work in fullscreen */
+:fullscreen .video-fullscreen-active .timer-overlay.critical {
+    animation: timerCritical 0.8s infinite ease-in-out !important;
+}
+
+/* Fullscreen critical pulsing animation using class */
+.fullscreen-critical-pulse {
+    animation: fullscreenPulse 0.8s infinite ease-in-out !important;
+}
+
+@keyframes fullscreenPulse {
+    0%, 100% { 
+        transform: scale(1) !important; 
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3) !important; 
+    }
+    50% { 
+        transform: scale(1.1) !important; 
+        box-shadow: 0 6px 25px rgba(239, 68, 68, 0.8) !important; 
+    }
+}
+
+/* Ensure the animation works in all fullscreen contexts */
+:fullscreen .fullscreen-critical-pulse,
+:-webkit-full-screen .fullscreen-critical-pulse,
+:-moz-full-screen .fullscreen-critical-pulse {
+    animation: fullscreenPulse 0.8s infinite ease-in-out !important;
+}
+
 /* Make sure video wrapper is positioned relative for overlay */
 .video-wrapper {
     position: relative;
@@ -1221,7 +1333,243 @@ body {
 .timer-overlay.timer-ready .timer-progress {
     width: 0%;
     background: rgba(255, 255, 255, 0.5);
-}      
+}   
+
+/* FULLSCREEN OVERLAY STYLES */
+/* Show overlays when video wrapper has fullscreen class */
+.video-fullscreen-active .timer-overlay,
+.video-fullscreen-active .patient-image-btn-overlay {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+/* Ensure overlays are visible in all fullscreen states */
+:fullscreen .video-fullscreen-active .timer-overlay,
+:fullscreen .video-fullscreen-active .patient-image-btn-overlay,
+:-webkit-full-screen .video-fullscreen-active .timer-overlay,
+:-webkit-full-screen .video-fullscreen-active .patient-image-btn-overlay,
+:-moz-full-screen .video-fullscreen-active .timer-overlay,
+:-moz-full-screen .video-fullscreen-active .patient-image-btn-overlay {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+/* Fullscreen timer positioning */
+.video-fullscreen-active .timer-overlay {
+    top: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5) !important;
+}
+
+
+/* Fullscreen Review Overlay - Following Timer Pattern */
+
+        
+
+/* Fullscreen patient image button positioning */
+.video-fullscreen-active .patient-image-btn-overlay {
+    bottom: 120px !important;
+    left: 30px !important;
+    width: 80px !important;
+    height: 80px !important;
+    font-size: 24px !important;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.6) !important;
+}
+
+/* Enhanced fullscreen review section visibility */
+.fullscreen-review-overlay {
+    position: fixed !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 800px !important;
+    z-index: 999999 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(10px) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+    display: none !important;
+    padding: 20px !important;
+}
+
+.fullscreen-review-overlay.show {
+    display: block !important;
+}
+
+/* Force visibility in all fullscreen contexts */
+:fullscreen .fullscreen-review-overlay.show,
+:-webkit-full-screen .fullscreen-review-overlay.show,
+:-moz-full-screen .fullscreen-review-overlay.show {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+.fullscreen-review-overlay h3 {
+    margin: 0 0 10px 0 !important;
+    color: var(--primary-color) !important;
+    text-align: center !important;
+    font-size: 18px !important;
+}
+
+.fullscreen-review-overlay .review-transcript {
+    height: 120px !important;
+    font-size: 16px !important;
+    background: rgba(255, 255, 255, 0.9) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    padding: 15px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    margin: 10px 0 !important;
+}
+
+.fullscreen-review-overlay .review-buttons {
+    display: flex !important;
+    gap: 15px !important;
+    margin-top: 15px !important;
+    justify-content: space-between !important;
+}
+
+.fullscreen-review-overlay .review-buttons button {
+    flex: 1 !important;
+    height: 50px !important;
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    border-radius: 8px !important;
+    backdrop-filter: blur(5px) !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.3s !important;
+}
+
+/* Webkit fullscreen specific styles */
+video::-webkit-media-controls {
+    display: none !important;
+}
+
+video::-webkit-media-controls-enclosure {
+    display: none !important;
+}
+
+/* Firefox fullscreen specific styles */
+video::-moz-media-controls {
+    display: none !important;
+}    
+
+/* Fullscreen Review Overlay - Following Timer Pattern */
+.review-overlay {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 98%;
+    max-width: 1400px;
+    z-index: 15;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    padding: 15px;
+    display: none;
+    transition: all 0.3s ease;
+}
+
+.review-overlay.active {
+    display: block;
+}
+
+.video-fullscreen-active .review-overlay.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
+
+:fullscreen .video-fullscreen-active .review-overlay.active,
+:-webkit-full-screen .video-fullscreen-active .review-overlay.active,
+:-moz-full-screen .video-fullscreen-active .review-overlay.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+}
+
+.review-overlay h3 {
+    margin: 0 0 10px 0;
+    color: var(--primary-color);
+    text-align: center;
+    font-size: 18px;
+}
+
+.review-overlay .review-transcript {
+    height: 60px;
+    font-size: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    margin: 5px 0;
+    resize: none;
+}
+
+.review-overlay .review-buttons {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+    justify-content: space-between;
+}
+
+.review-overlay .review-buttons button {
+    flex: 1;
+    height: 50px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+       /* FORCE OVERRIDE - Debug CSS */
+#reviewOverlay.active {
+    display: block !important;
+    position: absolute !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 90% !important;
+    max-width: 800px !important;
+    z-index: 999999 !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    padding: 20px !important;
+    border: 2px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Force fullscreen visibility */
+.video-wrapper #reviewOverlay.active,
+.video-fullscreen-active #reviewOverlay.active,
+:fullscreen #reviewOverlay.active,
+:-webkit-full-screen #reviewOverlay.active,
+:-moz-full-screen #reviewOverlay.active {
+    display: block !important;
+    position: fixed !important;
+    z-index: 999999 !important;
+    bottom: 20px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+}
         
     </style>
 </head>
@@ -1723,6 +2071,26 @@ body {
 >
     ❌
 </button>
+       
+       <!-- Review Overlay for Fullscreen -->
+<div id="reviewOverlay" class="review-overlay" style="display: none; position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 800px; z-index: 999999; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); border-radius: 12px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3); border: 2px solid rgba(255, 255, 255, 0.3); padding: 20px;">
+    <h3 style="margin: 0 0 10px 0; color: var(--primary-color); text-align: center; font-size: 18px;">Live Transcription & Review</h3>
+    <textarea id="overlayReviewTranscript" placeholder="No message to review yet" style="height: 120px; font-size: 16px; background: rgba(255, 255, 255, 0.9); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; width: 100%; box-sizing: border-box; margin: 10px 0; resize: none;"></textarea>
+    <div style="display: flex; gap: 15px; margin-top: 15px; justify-content: space-between;">
+        <button class="btn-info" id="overlayTalkButton" onclick="toggleRecording()" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Start Recording
+        </button>
+        <button class="btn-success" onclick="sendOverlayMessage()" disabled id="overlaySendBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Send Message
+        </button>
+        <button class="btn-warning" onclick="editOverlayTranscript()" disabled id="overlayEditBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Edit
+        </button>
+        <button class="btn-danger" onclick="deleteOverlayTranscript()" disabled id="overlayDeleteBtn" style="flex: 1; height: 50px; font-size: 16px; font-weight: 600; border-radius: 8px; border: none; cursor: pointer;">
+            Delete & Retry
+        </button>
+    </div>
+</div>
    
    <video 
     id="avatarVideo" 
@@ -1860,6 +2228,11 @@ let forceStopRecognition = false; // Flag to force stop recognition
         let mediaRecorder = null; // MediaRecorder for Deepgram streaming
         let audioStream = null; // Audio stream from microphone
 
+        // ===== FULLSCREEN MANAGEMENT VARIABLES =====
+let isVideoFullscreen = false;
+let fullscreenReviewSection = null;
+let originalReviewSection = null;
+
         
 
         // ===== PRESENTER GENDER DATABASE =====
@@ -1933,6 +2306,10 @@ initializeDIDElements();
 
 // Load collapsed state for configuration panel
     loadCollapsedState();
+            
+// Initialize fullscreen support - ADD THIS LINE
+    initializeFullscreenSupport();
+            
         };
         
         // ===== SESSION MANAGEMENT =====
@@ -2291,23 +2668,29 @@ function splitTextIntoChunks(text, chunkSize) {
                     }
                     
                     // Update live transcription display
-                    const reviewBox = document.getElementById('reviewTranscript');
-                    let displayText = '';
+                   // Update live transcription display in BOTH boxes
+const reviewBox = document.getElementById('reviewTranscript');
+const overlayBox = document.getElementById('overlayReviewTranscript');
+let displayText = '';
 
-                    // Show accumulated final transcript
-                    if (fullTranscript) {
-                        displayText += fullTranscript.trim();
-                    }
+// Show accumulated final transcript
+if (fullTranscript) {
+    displayText += fullTranscript.trim();
+}
 
-                    // Show interim transcript
-                    if (interimTranscript) {
-                        if (fullTranscript) {
-                            displayText += ' ';
-                        }
-                        displayText += interimTranscript;
-                    }
+// Show interim transcript
+if (interimTranscript) {
+    if (fullTranscript) {
+        displayText += ' ';
+    }
+    displayText += interimTranscript;
+}
 
-                    reviewBox.value = displayText || 'Listening...';
+const finalDisplayText = displayText || 'Listening...';
+reviewBox.value = finalDisplayText;
+if (overlayBox) {
+    overlayBox.value = finalDisplayText;
+}
                     
                     console.log('Full transcript:', fullTranscript, 'Interim:', interimTranscript);
                 };
@@ -2488,36 +2871,52 @@ if (isAvatarInitialized && !isStreamConnected) {
 
         function updateTalkButton() {
     const button = document.getElementById('talkButton');
+    const overlayButton = document.getElementById('overlayTalkButton');
+    
+    let className = '';
+    let innerHTML = '';
+    let disabled = false;
     
     switch (recordingState) {
         case 'stopped':
-            button.classList.remove('recording');
-            button.className = 'btn-primary';  // BLUE when stopped
-            button.innerHTML = '🎤 Start Recording';
-            button.disabled = false;
+            className = 'btn-primary';
+            innerHTML = '🎤 Start Recording';
+            disabled = false;
             break;
             
         case 'recording':
-            button.classList.add('recording');
-            button.className = 'btn-danger recording';  // RED when recording
-            button.innerHTML = '⏹️ Stop Recording';
-            button.disabled = false;
+            className = 'btn-danger recording';
+            innerHTML = '⏹️ Stop Recording';
+            disabled = false;
             break;
             
         case 'processing':
-            button.classList.remove('recording');
-            button.className = 'btn-warning';  // ORANGE when processing
-            button.innerHTML = '⏳ Processing...';
-            button.disabled = true;
+            className = 'btn-warning';
+            innerHTML = '⏳ Processing...';
+            disabled = true;
             break;
             
         case 'reviewing':
-            button.classList.remove('recording');
-            button.className = 'btn-success';  // GREEN when reviewing
-            button.innerHTML = '📝 Reviewing...';
-            button.disabled = true;
+            className = 'btn-success';
+            innerHTML = '📝 Reviewing...';
+            disabled = true;
             break;
     }
+    
+    // Update both buttons
+    [button, overlayButton].forEach(btn => {
+        if (btn) {
+            btn.className = className;
+            btn.innerHTML = innerHTML;
+            btn.disabled = disabled;
+            
+            if (recordingState === 'recording') {
+                btn.classList.add('recording');
+            } else {
+                btn.classList.remove('recording');
+            }
+        }
+    });
 }
 
         // ===== STT PROVIDER MANAGEMENT =====
@@ -2607,13 +3006,16 @@ function selectVoiceMethod(method) {
                         if (transcript && transcript.trim() !== '') {
                             const isFinal = data.is_final;
                             
-                            // Update transcription display
-                            const reviewBox = document.getElementById('reviewTranscript');
+                            // Update transcription display in BOTH boxes
+const reviewBox = document.getElementById('reviewTranscript');
+const overlayBox = document.getElementById('overlayReviewTranscript');
 
-                            if (isFinal) {
+if (isFinal) {
     // Add to full transcript
     fullTranscript += transcript + ' ';
-    reviewBox.value = fullTranscript.trim();
+    const finalText = fullTranscript.trim();
+    reviewBox.value = finalText;
+    if (overlayBox) overlayBox.value = finalText;
 } else {
     // Show interim results
     let displayText = '';
@@ -2622,6 +3024,7 @@ function selectVoiceMethod(method) {
     }
     displayText += transcript;
     reviewBox.value = displayText;
+    if (overlayBox) overlayBox.value = displayText;
 }
                             
                             console.log('Deepgram transcript:', transcript, 'Final:', isFinal);
@@ -2736,94 +3139,132 @@ function selectVoiceMethod(method) {
         }
         
                 // ===== REVIEW SECTION FUNCTIONS =====
-        function showReviewSection(transcript) {
+ function showReviewSection(transcript) {
     pendingTranscript = transcript;
     recordingState = 'reviewing';
     updateTalkButton();
     
-    // Update review transcript
+    // Update ALL review transcripts
     document.getElementById('reviewTranscript').value = transcript;
-            
-            // Activate review section
-            document.getElementById('reviewSection').classList.add('active');
-            
-            // Enable buttons
-            document.getElementById('sendBtn').disabled = false;
-            document.getElementById('editBtn').disabled = false;
-            document.getElementById('deleteBtn').disabled = false;
-            
-            // Scroll to review section
-            document.getElementById('reviewSection').scrollIntoView({ 
-                behavior: 'smooth', 
-                block: 'center' 
-            });
-            
-            showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
-        }
+    document.getElementById('overlayReviewTranscript').value = transcript;
+    
+    // Activate review sections
+    document.getElementById('reviewSection').classList.add('active');
+    
+    // FORCE the overlay to show ONLY in fullscreen mode
+const overlay = document.getElementById('reviewOverlay');
+if (overlay && isVideoFullscreen) {
+    overlay.style.display = 'block';
+    overlay.style.position = 'fixed';
+    overlay.style.zIndex = '999999';
+    overlay.classList.add('active');
+    
+    // Apply resize styling
+    setTimeout(resizeReviewOverlay, 100);
+} else if (overlay) {
+    // Hide overlay when not in fullscreen
+    overlay.style.display = 'none';
+    overlay.classList.remove('active');
+}
+    
+    // Enable ALL buttons
+    document.getElementById('sendBtn').disabled = false;
+    document.getElementById('editBtn').disabled = false;
+    document.getElementById('deleteBtn').disabled = false;
+    document.getElementById('overlaySendBtn').disabled = false;
+    document.getElementById('overlayEditBtn').disabled = false;
+    document.getElementById('overlayDeleteBtn').disabled = false;
+    
+    // Debug
+    console.log('Review overlay should be visible now');
+    debugReviewOverlay();
+    
+    showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
+}
 
      function sendReviewedMessage() {
     // Stop any existing timer and start a new 2-minute response timer
     stopResponseTimer();
     startResponseTimer();
     
-    const reviewedText = document.getElementById('reviewTranscript').value.trim();
-            
-            if (!reviewedText) {
-                showStatus('Message is empty. Please add some text or delete to try again.', 'error');
-                return;
-            }
-            
-            // Hide review section
-            hideReviewSection();
-            
-            // Add message to chat and send to webhook
-            addMessage(reviewedText, 'user');
-            sendToWebhook(reviewedText);
-            
-            // Reset state
-            recordingState = 'stopped';
-            updateTalkButton();
-            pendingTranscript = '';
-        }
-
-        function editTranscript() {
-    // Focus on the editable transcript
-    const transcriptElement = document.getElementById('reviewTranscript');
-    transcriptElement.focus();
+    // Get reviewed text from appropriate source
+    let reviewedText = '';
+    if (isVideoFullscreen) {
+        const fullscreenTranscript = document.getElementById('overlayReviewTranscript');
+        reviewedText = fullscreenTranscript ? fullscreenTranscript.value.trim() : '';
+    } else {
+        reviewedText = document.getElementById('reviewTranscript').value.trim();
+    }
     
-    // Select all text for easy editing (textarea method)
-    transcriptElement.select();
+    if (!reviewedText) {
+        showStatus('Message is empty. Please add some text or delete to try again.', 'error');
+        return;
+    }
+    
+    // Hide review section (handles both normal and fullscreen)
+    hideReviewSection();
+    
+    // Add message to chat and send to webhook
+    addMessage(reviewedText, 'user');
+    sendToWebhook(reviewedText);
+    
+    // Reset state
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+}
+
+        function editTranscript(isFullscreen = false) {
+    // Focus on the appropriate transcript element
+    const transcriptElement = isFullscreen ? 
+        document.getElementById('fullscreenReviewTranscript') : 
+        document.getElementById('reviewTranscript');
+    
+    if (transcriptElement) {
+        transcriptElement.focus();
+        transcriptElement.select();
+    }
     
     showStatus('Edit your message in the text box above, then click "Send Message"', 'info');
 }
 
-        function deleteTranscript() {
-            // Hide review section
-            hideReviewSection();
-            
-            // Reset state for new recording
-            recordingState = 'stopped';
-            updateTalkButton();
-            pendingTranscript = '';
-            fullTranscript = '';
-            
-            // Clear review box
-document.getElementById('reviewTranscript').value = '';
-            
-            showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
-        }
+        function deleteTranscript(isFullscreen = false) {
+    // Hide review section
+    hideReviewSection();
+    
+    // Reset state for new recording
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+    fullTranscript = '';
+    
+    // Clear review boxes
+    document.getElementById('reviewTranscript').value = '';
+    if (isFullscreen) {
+        const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+        if (fullscreenTranscript) fullscreenTranscript.value = '';
+    }
+    
+    showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
+}
 
         function hideReviewSection() {
-            document.getElementById('reviewSection').classList.remove('active');
-            document.getElementById('reviewTranscript').value = '';
-            
-            // Disable buttons
-            document.getElementById('sendBtn').disabled = true;
-            document.getElementById('editBtn').disabled = true;
-            document.getElementById('deleteBtn').disabled = true;
-            
-            document.getElementById('talkButton').disabled = false;
-        }
+    document.getElementById('reviewSection').classList.remove('active');
+    document.getElementById('reviewOverlay').classList.remove('active');
+    
+    document.getElementById('reviewTranscript').value = '';
+    document.getElementById('overlayReviewTranscript').value = '';
+    
+    // Disable ALL buttons
+    document.getElementById('sendBtn').disabled = true;
+    document.getElementById('editBtn').disabled = true;
+    document.getElementById('deleteBtn').disabled = true;
+    document.getElementById('overlaySendBtn').disabled = true;
+    document.getElementById('overlayEditBtn').disabled = true;
+    document.getElementById('overlayDeleteBtn').disabled = true;
+    
+    document.getElementById('talkButton').disabled = false;
+}
 
 // ===== D-ID INITIALIZATION =====
         // Initialize D-ID client and video element
@@ -4248,32 +4689,87 @@ function updatePatientImageButton() {
             return url;
         }
         
-        // Show patient image modal with gallery functionality
-        function showPatientImage() {
-            if (!currentScenario || patientImages.length === 0) {
-                showStatus('No scenario selected or no images available', 'error');
-                return;
-            }
-            
-            // Reset to first image
-            currentImageIndex = 0;
-            
-            // Set modal title
-            const patientName = currentScenario['Patient Name'] || 'Patient';
-            const titleElement = document.getElementById('imageModalTitle');
-            if (patientImages.length === 1) {
-                titleElement.textContent = `${patientName} - Patient Image`;
-            } else {
-                titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
-            }
-            
-            // Show modal
-            const modal = document.getElementById('imageModal');
-            modal.classList.add('show');
-            
-            // Load the first image
-            loadImageAtIndex(0);
-        }
+      // Show patient image modal with gallery functionality
+function showPatientImage() {
+    if (!currentScenario || patientImages.length === 0) {
+        showStatus('No scenario selected or no images available', 'error');
+        return;
+    }
+    
+    // Reset to first image
+    currentImageIndex = 0;
+    
+    // Set modal title
+    const patientName = currentScenario['Patient Name'] || 'Patient';
+    
+    if (isVideoFullscreen) {
+        // Create modal inside the fullscreen element
+        showFullscreenImageModal(patientName);
+    } else {
+        // Use normal modal
+        showNormalImageModal(patientName);
+    }
+    
+    // Load the first image
+    loadImageAtIndex(0);
+}
+
+// New function for fullscreen modal
+function showFullscreenImageModal(patientName) {
+    // Find the fullscreen element (video wrapper)
+    const fullscreenElement = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
+    
+    if (!fullscreenElement) {
+        console.log('No fullscreen element found, using normal modal');
+        showNormalImageModal(patientName);
+        return;
+    }
+    
+    // Remove any existing fullscreen modal
+    const existingModal = fullscreenElement.querySelector('.fullscreen-image-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    // Create modal HTML
+    const modalHTML = `
+        <div class="fullscreen-image-modal" id="fullscreenImageModal" onclick="closeFullscreenImageModal(event)">
+            <div class="image-modal-content" onclick="event.stopPropagation()">
+                <div class="image-modal-header">
+                    <h3 id="fullscreenImageModalTitle">${patientName} - ${patientImages.length > 1 ? `Image 1 of ${patientImages.length}` : 'Patient Image'}</h3>
+                    <button class="image-modal-close" onclick="closeFullscreenImageModal()">&times;</button>
+                </div>
+                <div class="image-modal-body" id="fullscreenImageModalBody">
+                    <div class="image-loading">
+                        <div class="spinner"></div>
+                        Loading image...
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Add modal to fullscreen element
+    fullscreenElement.insertAdjacentHTML('beforeend', modalHTML);
+    
+    console.log('Fullscreen image modal created and added to fullscreen element');
+}
+
+// Function for normal modal
+function showNormalImageModal(patientName) {
+    const titleElement = document.getElementById('imageModalTitle');
+    if (patientImages.length === 1) {
+        titleElement.textContent = `${patientName} - Patient Image`;
+    } else {
+        titleElement.textContent = `${patientName} - Image 1 of ${patientImages.length}`;
+    }
+    
+    const modal = document.getElementById('imageModal');
+    modal.classList.add('show');
+}
 
 // Load image at specific index
 function loadImageAtIndex(index) {
@@ -4283,15 +4779,27 @@ function loadImageAtIndex(index) {
     const imageUrl = patientImages[index];
     const convertedImageUrl = convertGoogleDriveUrl(imageUrl);
     
+    // Determine which modal we're using
+    const isUsingFullscreenModal = isVideoFullscreen && document.querySelector('.fullscreen-image-modal');
+    
     // Update modal title with current image number
     const patientName = currentScenario['Patient Name'] || 'Patient';
-    const titleElement = document.getElementById('imageModalTitle');
-    if (patientImages.length > 1) {
-        titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+    const titleElement = isUsingFullscreenModal ? 
+        document.getElementById('fullscreenImageModalTitle') : 
+        document.getElementById('imageModalTitle');
+        
+    if (titleElement) {
+        if (patientImages.length > 1) {
+            titleElement.textContent = `${patientName} - Image ${index + 1} of ${patientImages.length}`;
+        }
     }
     
     // Update modal body
-    const modalBody = document.getElementById('imageModalBody');
+    const modalBody = isUsingFullscreenModal ? 
+        document.getElementById('fullscreenImageModalBody') : 
+        document.getElementById('imageModalBody');
+    
+    if (!modalBody) return;
     
     // Show loading state
     modalBody.innerHTML = `
@@ -4305,16 +4813,12 @@ function loadImageAtIndex(index) {
     const img = new Image();
     
     img.onload = function() {
-        // Image loaded successfully
         const galleryHTML = createGalleryHTML(convertedImageUrl, patientName);
         modalBody.innerHTML = galleryHTML;
-        
-        // Update navigation button states
         updateNavigationButtons();
     };
     
     img.onerror = function() {
-        // Try alternative Google Drive format
         if (imageUrl.includes('drive.google.com') && !img.hasTriedAlternative) {
             console.log('First Google Drive format failed, trying alternative...');
             img.hasTriedAlternative = true;
@@ -4329,12 +4833,10 @@ function loadImageAtIndex(index) {
             }
         }
         
-        // Image failed to load completely
         modalBody.innerHTML = createErrorHTML(imageUrl, convertedImageUrl);
         updateNavigationButtons();
     };
     
-    // Start loading the image
     img.src = convertedImageUrl;
 }
 
@@ -4449,17 +4951,40 @@ function updateNavigationButtons() {
     }
 }
 
-       
-        // Close patient image modal
+       // Close patient image modal
         function closeImageModal(event) {
             // If event is passed and it's not the backdrop click, ignore
             if (event && event.target !== event.currentTarget && event.type === 'click') {
                 return;
             }
             
-            const modal = document.getElementById('imageModal');
-            modal.classList.remove('show');
+            // Check if we're in fullscreen mode
+            if (isVideoFullscreen) {
+                closeFullscreenImageModal(event);
+            } else {
+                const modal = document.getElementById('imageModal');
+                modal.classList.remove('show');
+            }
         }
+
+           
+        // ADD THE NEW FUNCTION HERE:
+        // Close fullscreen image modal
+        function closeFullscreenImageModal(event) {
+            // If event is passed and it's not the backdrop click, ignore
+            if (event && event.target !== event.currentTarget && event.type === 'click') {
+                return;
+            }
+            
+            const fullscreenModal = document.querySelector('.fullscreen-image-modal');
+            if (fullscreenModal) {
+                fullscreenModal.remove();
+                console.log('Fullscreen image modal removed');
+            }
+        }
+        
+        // The next existing function continues here...
+    
         
         // Add keyboard support for modal
 document.addEventListener('keydown', function(event) {
@@ -5371,6 +5896,279 @@ function forceScrollToBottom() {
         }, 300);
     }, 5000);
 }
+
+      // ===== FULLSCREEN MANAGEMENT FUNCTIONS =====
+function initializeFullscreenSupport() {
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    if (!avatarVideo || !videoWrapper) return;
+    
+    // Create fullscreen review overlay (initially hidden)
+    createFullscreenReviewOverlay();
+    
+    // Listen for fullscreen changes
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    
+    // Add double-click to enter fullscreen
+    videoWrapper.addEventListener('dblclick', () => {
+        if (!isVideoFullscreen) {
+            enterVideoFullscreen();
+        }
+    });
+    
+    // Add keyboard shortcut (F key) when video is focused
+    avatarVideo.addEventListener('keydown', (e) => {
+        if (e.key === 'f' || e.key === 'F') {
+            e.preventDefault();
+            if (!isVideoFullscreen) {
+                enterVideoFullscreen();
+            }
+        }
+    });
+    
+    console.log('Fullscreen support initialized');
+}
+
+function createFullscreenReviewOverlay() {
+    // Create fullscreen review overlay
+    fullscreenReviewSection = document.createElement('div');
+    fullscreenReviewSection.id = 'fullscreenReviewSection';
+    fullscreenReviewSection.className = 'fullscreen-review-overlay';
+    
+    // Create the content structure
+    fullscreenReviewSection.innerHTML = `
+        <h3>Live Transcription & Review</h3>
+        <textarea class="review-transcript" id="fullscreenReviewTranscript" placeholder="No message to review yet"></textarea>
+        <div class="review-buttons">
+            <button class="btn-info" id="fullscreenTalkButton">Start Recording</button>
+            <button class="btn-success" id="fullscreenSendBtn" disabled>Send Message</button>
+            <button class="btn-warning" id="fullscreenEditBtn" disabled>Edit</button>
+            <button class="btn-danger" id="fullscreenDeleteBtn" disabled>Delete & Retry</button>
+        </div>
+    `;
+    
+    // Set up event handlers
+    const talkBtn = fullscreenReviewSection.querySelector('#fullscreenTalkButton');
+    const sendBtn = fullscreenReviewSection.querySelector('#fullscreenSendBtn');
+    const editBtn = fullscreenReviewSection.querySelector('#fullscreenEditBtn');
+    const deleteBtn = fullscreenReviewSection.querySelector('#fullscreenDeleteBtn');
+    
+    if (talkBtn) talkBtn.onclick = toggleRecording;
+    if (sendBtn) sendBtn.onclick = sendReviewedMessage;
+    if (editBtn) editBtn.onclick = () => editTranscript(true);
+    if (deleteBtn) deleteBtn.onclick = () => deleteTranscript(true);
+    
+    // Add to body
+    document.body.appendChild(fullscreenReviewSection);
+    
+    console.log('Fullscreen review overlay created');
+}
+
+function handleFullscreenChange() {
+    const fullscreenElement = document.fullscreenElement || 
+                            document.webkitFullscreenElement || 
+                            document.mozFullScreenElement || 
+                            document.msFullscreenElement;
+    
+    const avatarVideo = document.getElementById('avatarVideo');
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    // Check if ANY element is in fullscreen mode
+    isVideoFullscreen = !!fullscreenElement;
+    
+    if (isVideoFullscreen) {
+    console.log('Entered fullscreen mode');
+    
+    // Add class to video wrapper for CSS targeting
+    if (videoWrapper) {
+        videoWrapper.classList.add('video-fullscreen-active');
+    }
+    
+    // Force overlays to be visible
+    const timerDisplay = document.getElementById('timerDisplay');
+    const patientBtn = document.getElementById('patientImageBtn');
+    const reviewOverlay = document.getElementById('reviewOverlay');
+    
+    if (timerDisplay) {
+        timerDisplay.style.display = 'block';
+        timerDisplay.style.position = 'fixed';
+        timerDisplay.style.zIndex = '999999';
+    }
+    
+    if (patientBtn) {
+        patientBtn.style.display = 'flex';
+        patientBtn.style.position = 'fixed';
+        patientBtn.style.zIndex = '999999';
+    }
+    
+   // Always show review overlay in fullscreen mode
+if (reviewOverlay) {
+    reviewOverlay.style.display = 'block';
+    reviewOverlay.style.position = 'fixed';
+    reviewOverlay.style.zIndex = '999999';
+    reviewOverlay.classList.add('active');
+    
+    // Force resize when entering fullscreen
+    setTimeout(resizeReviewOverlay, 100);
+}
+    
+    // Sync review sections
+    syncReviewSections();
+        
+    } else {
+    console.log('Exited fullscreen mode');
+    
+    // Remove fullscreen class
+    if (videoWrapper) {
+        videoWrapper.classList.remove('video-fullscreen-active');
+    }
+    
+    // Reset overlay styles
+    const timerDisplay = document.getElementById('timerDisplay');
+    const patientBtn = document.getElementById('patientImageBtn');
+    const reviewOverlay = document.getElementById('reviewOverlay');
+    
+    if (timerDisplay) {
+        timerDisplay.style.position = '';
+        timerDisplay.style.zIndex = '';
+        
+        // Remove forced styles to restore normal CSS behavior
+        timerDisplay.style.removeProperty('background');
+        timerDisplay.style.removeProperty('border-color');
+        timerDisplay.style.removeProperty('animation');
+    }
+    
+    if (patientBtn) {
+        patientBtn.style.position = '';
+        patientBtn.style.zIndex = '';
+    }
+    
+    // Hide review overlay when exiting fullscreen (unless actively reviewing)
+if (reviewOverlay) {
+    if (recordingState !== 'reviewing') {
+        reviewOverlay.style.display = 'none';
+        reviewOverlay.classList.remove('active');
+    }
+    reviewOverlay.style.position = 'absolute';
+    reviewOverlay.style.zIndex = '15';
+    
+    // Reset any forced styles when exiting fullscreen
+    reviewOverlay.style.removeProperty('width');
+    reviewOverlay.style.removeProperty('max-width');
+    reviewOverlay.style.removeProperty('padding');
+    
+    const transcript = document.getElementById('overlayReviewTranscript');
+    if (transcript) {
+        transcript.style.removeProperty('height');
+        transcript.style.removeProperty('margin');
+        transcript.style.removeProperty('padding');
+    }
+}
+    
+    // Hide fullscreen review
+    hideFullscreenReview();
+    
+    // Sync back to original
+    syncReviewSections(true);
+}
+}
+
+function enterVideoFullscreen() {
+    const videoWrapper = document.querySelector('.video-wrapper');
+    
+    if (videoWrapper) {
+        if (videoWrapper.requestFullscreen) {
+            videoWrapper.requestFullscreen();
+        } else if (videoWrapper.webkitRequestFullscreen) {
+            videoWrapper.webkitRequestFullscreen();
+        } else if (videoWrapper.mozRequestFullScreen) {
+            videoWrapper.mozRequestFullScreen();
+        } else if (videoWrapper.msRequestFullscreen) {
+            videoWrapper.msRequestFullscreen();
+        }
+    }
+}
+
+function syncReviewSections(toOriginal = false) {
+    const originalTranscript = document.getElementById('reviewTranscript');
+    const fullscreenTranscript = document.getElementById('fullscreenReviewTranscript');
+    
+    if (originalTranscript && fullscreenTranscript) {
+        if (toOriginal) {
+            // Sync from fullscreen back to original
+            originalTranscript.value = fullscreenTranscript.value;
+        } else {
+            // Sync from original to fullscreen
+            fullscreenTranscript.value = originalTranscript.value;
+        }
+    }
+    
+    // Sync button states
+    syncButtonStates(toOriginal);
+}
+
+function syncButtonStates(toOriginal = false) {
+    const buttonPairs = [
+        ['talkButton', 'fullscreenTalkButton'],
+        ['sendBtn', 'fullscreenSendBtn'],
+        ['editBtn', 'fullscreenEditBtn'],
+        ['deleteBtn', 'fullscreenDeleteBtn']
+    ];
+    
+    buttonPairs.forEach(([originalId, fullscreenId]) => {
+        const originalBtn = document.getElementById(originalId);
+        const fullscreenBtn = document.getElementById(fullscreenId);
+        
+        if (originalBtn && fullscreenBtn) {
+            if (toOriginal) {
+                // Sync from fullscreen to original
+                originalBtn.className = fullscreenBtn.className;
+                originalBtn.innerHTML = fullscreenBtn.innerHTML;
+                originalBtn.disabled = fullscreenBtn.disabled;
+            } else {
+                // Sync from original to fullscreen
+                fullscreenBtn.className = originalBtn.className;
+                fullscreenBtn.innerHTML = originalBtn.innerHTML;
+                fullscreenBtn.disabled = originalBtn.disabled;
+            }
+        }
+    });
+}
+
+function showFullscreenReview() {
+    if (fullscreenReviewSection && isVideoFullscreen) {
+        console.log('Attempting to show fullscreen review');
+        
+        // Force the overlay to be visible
+        fullscreenReviewSection.style.display = 'block';
+        fullscreenReviewSection.style.position = 'fixed';
+        fullscreenReviewSection.style.zIndex = '999999';
+        fullscreenReviewSection.classList.add('show');
+        
+        // Sync content
+        syncReviewSections();
+        
+        // Log for debugging
+        console.log('Fullscreen review overlay should now be visible');
+        console.log('Overlay element:', fullscreenReviewSection);
+        console.log('Has show class:', fullscreenReviewSection.classList.contains('show'));
+    } else {
+        console.log('Cannot show fullscreen review:', {
+            hasOverlay: !!fullscreenReviewSection,
+            isFullscreen: isVideoFullscreen
+        });
+    }
+}
+
+function hideFullscreenReview() {
+    if (fullscreenReviewSection) {
+        fullscreenReviewSection.classList.remove('show');
+    }
+}  
         
         function saveConfig() {
     const config = {
@@ -5830,6 +6628,9 @@ function startResponseTimer() {
             } else { // First 60 seconds - GREEN
                 timerDisplay.className = 'timer-display timer-overlay';
             }
+            
+            // Apply appropriate styling (forced in fullscreen, normal CSS otherwise)
+            setTimeout(forceTimerStyling, 50);
         }
         
         // Beep in the last 10 seconds (once per second)
@@ -5913,48 +6714,138 @@ function playBeep() {
     oscillator.start(audioContext.currentTime);
     oscillator.stop(audioContext.currentTime + 0.1);
 }
+
+        function sendOverlayMessage() {
+    const reviewedText = document.getElementById('overlayReviewTranscript').value.trim();
+    
+    if (!reviewedText) {
+        showStatus('Message is empty. Please add some text or delete to try again.', 'error');
+        return;
+    }
+    
+    // Stop any existing timer and start a new 2-minute response timer
+    stopResponseTimer();
+    startResponseTimer();
+    
+    // Hide review section
+    hideReviewSection();
+    
+    // Add message to chat and send to webhook
+    addMessage(reviewedText, 'user');
+    sendToWebhook(reviewedText);
+    
+    // Reset state
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+}
+
+function editOverlayTranscript() {
+    const transcriptElement = document.getElementById('overlayReviewTranscript');
+    if (transcriptElement) {
+        transcriptElement.focus();
+        transcriptElement.select();
+    }
+    showStatus('Edit your message in the text box above, then click "Send Message"', 'info');
+}
+
+function deleteOverlayTranscript() {
+    // Hide review section
+    hideReviewSection();
+    
+    // Reset state for new recording
+    recordingState = 'stopped';
+    updateTalkButton();
+    pendingTranscript = '';
+    fullTranscript = '';
+    
+    // Clear review boxes
+    document.getElementById('reviewTranscript').value = '';
+    document.getElementById('overlayReviewTranscript').value = '';
+    
+    showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
+}
+
+// Add this function at the end of your JavaScript
+function debugReviewOverlay() {
+    const overlay = document.getElementById('reviewOverlay');
+    console.log('Review overlay element:', overlay);
+    console.log('Has active class:', overlay ? overlay.classList.contains('active') : 'N/A');
+    console.log('Display style:', overlay ? window.getComputedStyle(overlay).display : 'N/A');
+    console.log('Position style:', overlay ? window.getComputedStyle(overlay).position : 'N/A');
+    console.log('Z-index style:', overlay ? window.getComputedStyle(overlay).zIndex : 'N/A');
+    console.log('Is video fullscreen:', isVideoFullscreen);
+}
+
+// Force resize review overlay - ONLY in fullscreen
+function resizeReviewOverlay() {
+    // Only apply resize in fullscreen mode
+    if (!isVideoFullscreen) return;
+    
+    const overlay = document.getElementById('reviewOverlay');
+    const transcript = document.getElementById('overlayReviewTranscript');
+    
+    if (overlay) {
+        // Force overlay dimensions
+        overlay.style.setProperty('width', '98%', 'important');
+        overlay.style.setProperty('max-width', '1400px', 'important');
+        overlay.style.setProperty('padding', '15px', 'important');
+    }
+    
+    if (transcript) {
+        // Force textarea dimensions
+        transcript.style.setProperty('height', '60px', 'important');
+        transcript.style.setProperty('margin', '5px 0', 'important');
+        transcript.style.setProperty('padding', '10px', 'important');
+    }
+    
+    console.log('Review overlay resized for fullscreen');
+}
+
+// Call resize function whenever overlay is shown
+const originalShowReviewSection = showReviewSection;
+showReviewSection = function(transcript) {
+    originalShowReviewSection.call(this, transcript);
+    // Delay to ensure DOM is updated
+    setTimeout(resizeReviewOverlay, 100);
+};
+
+ 
+ // Force timer color changes and animations in fullscreen ONLY
+function forceTimerStyling() {
+    const timerDisplay = document.getElementById('timerDisplay');
+    if (!timerDisplay) return;
+    
+    // Only force styling in fullscreen, let normal CSS work otherwise
+    if (!isVideoFullscreen) {
+        // Remove any forced styles to let CSS work normally
+        timerDisplay.style.removeProperty('background');
+        timerDisplay.style.removeProperty('border-color');
+        timerDisplay.style.removeProperty('animation');
+        timerDisplay.classList.remove('fullscreen-critical-pulse');
+        return;
+    }
+    
+    // Force styles only in fullscreen mode
+    if (timerDisplay.classList.contains('critical')) {
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #ef4444, #dc2626)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.4)', 'important');
         
+        // Add a special class for fullscreen pulsing
+        timerDisplay.classList.add('fullscreen-critical-pulse');
+        
+    } else if (timerDisplay.classList.contains('warning')) {
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #f59e0b, #d97706)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.3)', 'important');
+        timerDisplay.classList.remove('fullscreen-critical-pulse');
+        
+    } else {
+        timerDisplay.style.setProperty('background', 'linear-gradient(135deg, #10b981, #059669)', 'important');
+        timerDisplay.style.setProperty('border-color', 'rgba(255, 255, 255, 0.2)', 'important');
+        timerDisplay.classList.remove('fullscreen-critical-pulse');
+    }
+}
+      
     </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
