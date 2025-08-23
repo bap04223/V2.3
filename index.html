@@ -3152,20 +3152,20 @@ if (isFinal) {
     document.getElementById('reviewSection').classList.add('active');
     
     // FORCE the overlay to show ONLY in fullscreen mode
-const overlay = document.getElementById('reviewOverlay');
-if (overlay && isVideoFullscreen) {
-    overlay.style.display = 'block';
-    overlay.style.position = 'fixed';
-    overlay.style.zIndex = '999999';
-    overlay.classList.add('active');
-    
-    // Apply resize styling
-    setTimeout(resizeReviewOverlay, 100);
-} else if (overlay) {
-    // Hide overlay when not in fullscreen
-    overlay.style.display = 'none';
-    overlay.classList.remove('active');
-}
+    const overlay = document.getElementById('reviewOverlay');
+    if (overlay && isVideoFullscreen) {
+        overlay.style.display = 'block';
+        overlay.style.position = 'fixed';
+        overlay.style.zIndex = '999999';
+        overlay.classList.add('active');
+        
+        // Apply resize styling
+        setTimeout(resizeReviewOverlay, 100);
+    } else if (overlay) {
+        // Hide overlay when not in fullscreen
+        overlay.style.display = 'none';
+        overlay.classList.remove('active');
+    }
     
     // Enable ALL buttons
     document.getElementById('sendBtn').disabled = false;
@@ -3175,11 +3175,12 @@ if (overlay && isVideoFullscreen) {
     document.getElementById('overlayEditBtn').disabled = false;
     document.getElementById('overlayDeleteBtn').disabled = false;
     
+     
     // Debug
     console.log('Review overlay should be visible now');
     debugReviewOverlay();
     
-    showStatus('Review your message above. Edit if needed, then click "Send Message"', 'info');
+    showStatus('Review your message above. Edit if needed, then click "Send Message" or press ENTER', 'info');
 }
 
      function sendReviewedMessage() {
@@ -3248,13 +3249,13 @@ if (overlay && isVideoFullscreen) {
     showStatus('Message deleted. Click "Start Recording" to try again.', 'info');
 }
 
-        function hideReviewSection() {
+      function hideReviewSection() {
     document.getElementById('reviewSection').classList.remove('active');
     document.getElementById('reviewOverlay').classList.remove('active');
     
     document.getElementById('reviewTranscript').value = '';
     document.getElementById('overlayReviewTranscript').value = '';
-    
+      
     // Disable ALL buttons
     document.getElementById('sendBtn').disabled = true;
     document.getElementById('editBtn').disabled = true;
@@ -5001,6 +5002,56 @@ document.addEventListener('keydown', function(event) {
         } else if (event.key === 'ArrowRight') {
             nextImage();
             event.preventDefault();
+        }
+    }
+});
+
+        // ===== KEYBOARD SHORTCUTS =====
+// Global keyboard event handler for shortcuts
+document.addEventListener('keydown', function(event) {
+    // Check if user is typing in a text input field (but allow shortcuts for dropdowns)
+    const activeElement = document.activeElement;
+    const isTextInput = (activeElement.tagName === 'INPUT' && 
+                        (activeElement.type === 'text' || 
+                         activeElement.type === 'password' || 
+                         activeElement.type === 'email' || 
+                         activeElement.type === 'search')) || 
+                       activeElement.tagName === 'TEXTAREA' ||
+                       activeElement.contentEditable === 'true';
+    
+    // Space bar for start/stop recording (allow when not typing in text inputs)
+    if (event.code === 'Space' && !isTextInput) {
+        event.preventDefault(); // Prevent page scrolling
+        const talkButton = document.getElementById('talkButton');
+        const overlayTalkButton = document.getElementById('overlayTalkButton');
+        
+        // Use overlay button if in fullscreen mode, otherwise regular button
+        const targetButton = isVideoFullscreen && overlayTalkButton ? overlayTalkButton : talkButton;
+        
+        if (targetButton && !targetButton.disabled) {
+            toggleRecording();
+        }
+        return;
+    }
+    
+    // Enter key for sending message
+    if (event.key === 'Enter' && !event.shiftKey) {
+        // Special case: if editing the review transcript, allow Enter for line breaks
+        if (activeElement.id === 'reviewTranscript' || activeElement.id === 'overlayReviewTranscript') {
+            return;
+        }
+        
+        // Send message if in review mode and not typing in a text input
+        if (recordingState === 'reviewing' && !isTextInput) {
+            event.preventDefault();
+            
+            // Use appropriate send function based on fullscreen state
+            if (isVideoFullscreen) {
+                sendOverlayMessage();
+            } else {
+                sendReviewedMessage();
+            }
+            return;
         }
     }
 });
