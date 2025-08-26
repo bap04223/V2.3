@@ -33,6 +33,29 @@
     --input-background: #1e293b;
     --accent-glow: rgba(99, 102, 241, 0.3);
 }
+
+        /* Hide auto-populated fields that users don't need to see */
+#deepgramApiKey,
+label[for="deepgramApiKey"],
+#didApiKey,
+label[for="didApiKey"],
+#deepgramModel,
+label[for="deepgramModel"],
+#deepgramLanguage,
+label[for="deepgramLanguage"],
+#deepgramSettings {
+    display: none !important;
+}
+
+/* Hide the D-ID API key form container and all its contents */
+form:has(#didApiKey) {
+    display: none !important;
+}
+
+/* Hide Deepgram API key help text */
+#deepgramSettings .form-group:first-child small {
+    display: none !important;
+}
         
         /* LOCKED BODY STYLING - Prevent expansion */
 body {
@@ -673,14 +696,15 @@ input:focus, select:focus, textarea:focus {
         }
         
         .image-modal-body {
-            padding: 0;
-            text-align: center;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: calc(100% - 50px);
-            overflow: hidden;
-        }
+    padding: 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    position: relative;
+    padding-bottom: 50px; /* Space for dots */
+}
         
         .patient-image {
             max-width: 100%;
@@ -759,6 +783,10 @@ input:focus, select:focus, textarea:focus {
     gap: 8px;
     margin-top: 15px;
     padding: 10px;
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
 
 .gallery-dot {
@@ -1794,8 +1822,8 @@ a:hover {
     <div class="form-group">
         <label for="deepgramLanguage">Language:</label>
         <select id="deepgramLanguage">
-            <option value="en-US">English (US)</option>
             <option value="en-GB">English (UK)</option>
+            <option value="en-US">English (US)</option>
             <option value="en-AU">English (AU)</option>
         </select>
     </div>
@@ -5139,9 +5167,9 @@ async function loadChatbotConfigurations() {
     showStatus('Loading chatbot configurations...', 'info');
     
     try {
-        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ'; // Your existing API key
+        const apiKey = 'AIzaSyDCrWAPXe6eYugvmnO1eJb7-S4QXQj3EgQ';
         
-        // Load from the first sheet (you could also make this configurable)
+        // Load from the first sheet
         const url = `https://sheets.googleapis.com/v4/spreadsheets/${configSheetId}/values/Sheet1?key=${apiKey}`;
         
         const response = await fetch(url);
@@ -5164,37 +5192,72 @@ async function loadChatbotConfigurations() {
                         name: row[0].trim(),
                         webhookUrl: row[1].trim(),
                         submitWebhookUrl: row[2].trim(),
-                        description: row[3] ? row[3].trim() : '' // Optional description column
+                        description: row[3] ? row[3].trim() : '',
+                        deepgramApiKey: row[4] ? row[4].trim() : '', // Column E
+                        didApiKey: row[6] ? row[6].trim() : ''       // Column G
                     });
                 }
             }
             
+            // AUTO-POPULATE API KEYS FROM FIRST CONFIGURATION
+            if (chatbotConfigurations.length > 0) {
+                const firstConfig = chatbotConfigurations[0];
+                
+                // Auto-populate Deepgram API key if present
+                if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
+                    document.getElementById('deepgramApiKey').value = firstConfig.deepgramApiKey;
+                    console.log('Auto-populated Deepgram API key from first configuration');
+                }
+                
+                // Auto-populate D-ID API key if present
+                if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
+                    document.getElementById('didApiKey').value = firstConfig.didApiKey;
+                    console.log('Auto-populated D-ID API key from first configuration');
+                }
+                
+                // Save the auto-populated keys
+                saveConfig();
+            }
+            
             populateChatbotDropdown();
-showStatus(`Loaded ${chatbotConfigurations.length} chatbot configurations`, 'success');
+            
+            // Enhanced status message showing what was auto-populated
+            let statusParts = [`Loaded ${chatbotConfigurations.length} configurations`];
+            if (chatbotConfigurations.length > 0) {
+                const firstConfig = chatbotConfigurations[0];
+                if (firstConfig.deepgramApiKey && firstConfig.deepgramApiKey.trim() !== '') {
+                    statusParts.push('Auto-filled Deepgram key');
+                }
+                if (firstConfig.didApiKey && firstConfig.didApiKey.trim() !== '') {
+                    statusParts.push('Auto-filled D-ID key');
+                }
+            }
+            
+            showStatus(`✅ ${statusParts.join(', ')}`, 'success');
 
-// Set button to completed status
-setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
+            // Set button to completed status
+            setButtonCompleted('loadChatbotBtn', 'Configurations Loaded');
 
-// Try to restore saved selection
-const savedConfig = localStorage.getItem('pharmacyChatConfig');
-if (savedConfig) {
-    const config = JSON.parse(savedConfig);
-    if (config.selectedChatbot) {
-        document.getElementById('chatbotSelect').value = config.selectedChatbot;
-    }
-}
+            // Try to restore saved selection
+            const savedConfig = localStorage.getItem('pharmacyChatConfig');
+            if (savedConfig) {
+                const config = JSON.parse(savedConfig);
+                if (config.selectedChatbot) {
+                    document.getElementById('chatbotSelect').value = config.selectedChatbot;
+                }
+            }
             
         } else {
             showStatus('No configuration data found in the sheet', 'error');
         }
         
     } catch (error) {
-    console.error('Error loading chatbot configurations:', error);
-    showStatus('Error loading configurations. Check console for details.', 'error');
-    
-    // Set button back to pending status on error
-setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
-}
+        console.error('Error loading chatbot configurations:', error);
+        showStatus('Error loading configurations. Check console for details.', 'error');
+        
+        // Set button back to pending status on error
+        setButtonStatus('loadChatbotBtn', 'pending', 'Load Failed - Retry');
+    }
 } // ADD THIS MISSING CLOSING BRACE
 
 // Populate the chatbot selection dropdown
@@ -5247,8 +5310,6 @@ function applyChatbotConfiguration() {
     
     // Show success message
     showStatus(`✅ Applied configuration: ${config.name}`, 'success');
-    // Set button to completed status
-setButtonCompleted('applyChatbotBtn', `Applied: ${config.name}`);
     
     // Optional: Clear chat if there's an existing conversation
     if (conversationHistory.length > 0) {
@@ -5262,7 +5323,7 @@ setButtonCompleted('applyChatbotBtn', `Applied: ${config.name}`);
     }
     
     console.log('Applied chatbot configuration:', config);
-} 
+}
 
         // ===== SCENARIO SETS MANAGEMENT =====
 
@@ -6963,3 +7024,14 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
