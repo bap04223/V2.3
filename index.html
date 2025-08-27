@@ -334,24 +334,30 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
 }
 
-        /* Status Button States - Add this after existing button styles */
+        /* UPDATED Status Button States - Changed colors */
 .btn-status-pending {
-    background-color: var(--danger-color) !important;
+    background: linear-gradient(135deg, var(--danger-color), #dc2626) !important;
     color: white !important;
     position: relative;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3) !important;
 }
 
 .btn-status-pending:hover {
-    background-color: #dc2626 !important;
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4) !important;
 }
 
 .btn-status-completed {
-    background-color: var(--success-color) !important;
+    background: linear-gradient(135deg, var(--success-color), #047857) !important;
     color: white !important;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3) !important;
 }
 
 .btn-status-completed:hover {
-    background-color: #047857 !important;
+    background: linear-gradient(135deg, #047857, #065f46) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4) !important;
 }
 
 .btn-status-completed::after {
@@ -7045,6 +7051,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
