@@ -34,6 +34,26 @@
     --accent-glow: rgba(99, 102, 241, 0.3);
 }
 
+        /* Reduce gap between Random Scenario button and Avatar Control */
+.btn-info[onclick="selectRandomScenario()"] {
+    margin-bottom: 0px !important;
+}
+
+/* Reduce gap between Avatar Control section and Conversation History */
+.form-group:has(#initializeAvatarBtn) {
+    margin-bottom: 0px !important;
+}
+
+/* Alternative selector for Avatar Control section if the above doesn't work */
+h3 + button#initializeAvatarBtn {
+    margin-bottom: 0px !important;
+}
+
+/* Reduce gap after Initialize Avatar button */
+#initializeAvatarBtn {
+    margin-bottom: 0px !important;
+}
+
         /* Hide auto-populated fields that users don't need to see */
 #deepgramApiKey,
 label[for="deepgramApiKey"],
@@ -2088,27 +2108,28 @@ a:hover {
     <select id="scenarioSelect" disabled>
         <option value="">Load sheet data first...</option>
     </select>
-    <button class="btn-info" onclick="selectRandomScenario()" style="margin-top: 10px; width: 100%;">
+    <button class="btn-info" onclick="selectRandomScenario()" style="margin-top: 15px; width: 100%;">
         Random Scenario
     </button>
 </div>
 
-</div>
+
 
 <!-- Avatar Control Section - MOVED FROM CONFIGURATION -->
-<div class="form-group" style="margin-bottom: 15px;">
-    <h3 style="margin-bottom: 15px; color: var(--text-primary); font-size: 1.1rem;">Avatar Control</h3>
+<div class="form-group" style="margin-bottom: 0px;">
+    <h3 style="margin-bottom: 5px; color: var(--text-primary); font-size: 1.1rem;">Avatar Control</h3>
     
     <button 
     type="button"
     class="btn-primary btn-status-pending" 
     onclick="initializeDID()" 
-    style="margin-bottom: 10px; width: 100%;"
+    style="margin-bottom: 5px; width: 100%;"
     id="initializeAvatarBtn"
 >
     Initialize & Connect Avatar
 </button>
 
+</div>
 </div>
 
                 <!-- Conversation History -->
@@ -7024,6 +7045,37 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
