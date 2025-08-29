@@ -85,8 +85,8 @@ body {
     color: var(--text-primary);
     line-height: 1.6;
     min-height: 100vh;
-    max-height: 100vh;
-    overflow: hidden;
+    /* Removed: max-height: 100vh; */
+    /* Removed: overflow: hidden; */
 }
         
         /* LOCKED CONTAINER - Fixed dimensions */
@@ -95,10 +95,10 @@ body {
     margin: 0 auto;
     padding: 20px;
     min-height: 100vh;
-    max-height: 100vh; /* LOCKED: Prevent expansion */
+    /* Removed: max-height: 100vh; */
     display: flex;
     flex-direction: column;
-    overflow: hidden; /* LOCKED: Contain all content */
+    /* Removed: overflow: hidden; */
 }
         
         /* Header section styling */
@@ -154,10 +154,10 @@ body {
     gap: 20px;
     flex: 1;
     align-items: stretch;
-    min-height: calc(100vh - 200px); /* LOCKED: Minimum height */
-    max-height: calc(100vh - 200px); /* LOCKED: Maximum height */
-    overflow: hidden; /* LOCKED: Prevent overflow expansion */
-    transition: all 0.3s ease; /* ADDED: Smooth grid transitions */
+    min-height: calc(100vh - 200px);
+    /* Removed: max-height: calc(100vh - 200px); */
+    /* Removed: overflow: hidden; */
+    transition: all 0.3s ease;
 }
         
         /* LOCKED CARD COMPONENT - Fixed sizes */
@@ -171,9 +171,10 @@ body {
     flex-direction: column;
     height: 100%;
     min-height: calc(100vh - 240px);
-    max-height: calc(100vh - 240px);
+    /* Removed: max-height: calc(100vh - 240px); */
     position: relative;
-    overflow: hidden;
+    /* Changed from hidden to auto: */
+    overflow: auto;
     backdrop-filter: blur(10px);
 }
 
@@ -190,17 +191,18 @@ body {
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 0; /* CRITICAL: Allows content to shrink */
-    overflow: hidden; /* CRITICAL: Prevents overflow expansion */
+    min-height: 0;
+    /* Changed from hidden to visible: */
+    overflow: visible;
 }
 
-     /* LOCKED SCROLLABLE SECTIONS - Constrained to card boundaries */
 .scrollable-section {
     flex: 1;
     overflow-y: auto;
-    min-height: 0; /* LOCKED: Allow shrinking */
-    max-height: none; /* LOCKED: Let parent control max height */
-}   
+    /* Removed min-height restriction */
+    /* Keep max-height: none */
+    max-height: none;
+}  
         
         .form-group {
     margin-bottom: 20px; /* Increased from 15px for better spacing */
@@ -7050,6 +7052,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
