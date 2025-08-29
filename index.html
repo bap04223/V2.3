@@ -372,6 +372,52 @@ input:focus, select:focus, textarea:focus {
     content: " ✓";
     font-weight: bold;
 }
+
+/* Back to Landing Page Button */
+.back-to-landing-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, var(--secondary-color), #059669);
+    color: white;
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.back-to-landing-btn:hover {
+    background: linear-gradient(135deg, #059669, #047857);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    color: white;
+}
+
+.back-to-landing-btn:active {
+    transform: translateY(0);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .back-to-landing-btn {
+        top: 15px;
+        right: 15px;
+        padding: 10px 16px;
+        font-size: 13px;
+    }
+}
+        
         
         /* LOCKED CHAT CONTAINER - Fixed boundaries */
 .chat-container {
@@ -1729,6 +1775,10 @@ a:hover {
 </head>
 
 <body>
+    <!-- Back to Landing Page Button -->
+<a href="https://bap04223.github.io/Landing-Page/" class="back-to-landing-btn" title="Return to Landing Page">
+    ← Back to Menu
+</a>
     <div class="container">
         <!-- Header section with title and description -->
         <div class="header">
@@ -7091,6 +7141,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
