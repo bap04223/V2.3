@@ -380,7 +380,7 @@ input:focus, select:focus, textarea:focus {
     left: 88px;
     z-index: 1000;
     padding: 12px 20px;
-    background: linear-gradient(135deg, var(--secondary-color), #059669);
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover)); 
     color: white;
     border: none;
     border-radius: 6px;
@@ -398,9 +398,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .back-to-landing-btn:hover {
-    background: linear-gradient(135deg, #059669, #047857);
+    background: linear-gradient(135deg, var(--primary-hover), #3730a3); 
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+    box-shadow: 0 6px 20px var(--accent-glow);
     color: white;
 }
 
@@ -7141,6 +7141,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
