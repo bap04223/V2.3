@@ -1681,6 +1681,24 @@ a:hover {
     color: var(--primary-hover);
     text-shadow: 0 0 5px var(--accent-glow);
 }   
+
+      .card-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: white;
+    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #fa709a, #fee140);
+}
+
+.card-icon:hover {
+    transform: scale(1.1) rotate(5deg);
+}  
         
     </style>
 </head>
@@ -1689,7 +1707,11 @@ a:hover {
     <div class="container">
         <!-- Header section with title and description -->
         <div class="header">
-            <h1>Video-Bot Consultation Training</h1>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 20px;">
+    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #fa709a, #fee140);">🎭</div>
+    <h1 style="margin: 0;">Avatar Video Chat Training</h1>
+    <div class="card-icon" style="margin: 0; background: linear-gradient(135deg, #fa709a, #fee140);">🎭</div>
+</div>
             <p>Practice your consultation skills with our AI-powered patients</p>
         </div>
         
@@ -7044,6 +7066,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
