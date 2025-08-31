@@ -1976,7 +1976,7 @@ a:hover {
             </select>
         </div>
         
-        <div class="form-group" id="imageUrlGroup">
+       <div class="form-group" id="imageUrlGroup" style="display: block;">
             <label for="sourceUrl">Source Image URL (for Talks):</label>
             <input type="url" id="sourceUrl" placeholder="https://example.com/your-image.jpg">
         </div>
@@ -2764,7 +2764,7 @@ function updateServiceFields() {
         });
     }
     
-    if (serviceTypeValue === 'talks') {
+   if (serviceTypeValue === 'talks') {
         // Show custom image URL field, hide presenter selection
         if (imageUrlGroup) {
             imageUrlGroup.style.display = 'block';
@@ -7141,6 +7141,7 @@ function forceTimerStyling() {
     </script>
 </body>
 </html>
+
 
 
 
